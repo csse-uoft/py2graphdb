@@ -10,6 +10,7 @@ authors = [
     { name = "Bart Gajderowicz", email = "bgajdero@gmail.com" },
 ]
 requires-python = ">=3.10"
+readme = "README.md"
 
 # Requirements: This is done differently by poetry!
 #dependencies = [
@@ -26,10 +27,9 @@ py2graphdb = "py2graphdb:cli"
 where = ["."]
 include = ["py2graphdb", "py2graphdb.*"]
 
-keywords = ['python', 'grpahdb', 'ontotext', 'sparql']
 
 [tool.poetry]
-readme = "README.md"
+keywords = ['python', 'grpahdb', 'ontotext', 'sparql']
 classifiers= [
     "Development Status :: 1 - Planning",
     "Topic :: Database",

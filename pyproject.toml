@@ -13,7 +13,7 @@ requires-python = ">=3.10"
 
 # Requirements: This is done differently by poetry!
 dependencies = [
-    "git+https://github.com/csse-uoft/graphdb-importer"
+#    "git+https://github.com/csse-uoft/graphdb-importer"
 ]
 
 [project.urls]

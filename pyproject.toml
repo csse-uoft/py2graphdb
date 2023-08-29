@@ -32,7 +32,7 @@ keywords = ['python', 'grpahdb', 'ontotext', 'sparql']
 readme = "README.md"
 classifiers= [
     "Development Status :: 1 - Planning",
-    "Topic :: Database"
+    "Topic :: Database",
     "Intended Audience :: Education",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",

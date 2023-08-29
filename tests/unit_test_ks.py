@@ -61,21 +61,11 @@ with utest:
 import re
 class UnitTestNode1(GraphNode):
     """
-        A db Model class that defines the schema for Traces.
-        Instances of this class are created whenever a new hypothesis is created.
 
         ...
 
         Attributes
         ----------
-        __tablename__ : str
-            The name of the database table
-        id : SQLAlchemy.Column
-            A unique ID for the knowledge source type
-        created_at : SQLAlchemy.Column
-            The date and time when an instantiated
-        hypothesis : SQLAlchemy.relationship
-            Relationship with the hypothesis data level
     """
     klass = 'utest.UnitTestNode1'
     relations = {

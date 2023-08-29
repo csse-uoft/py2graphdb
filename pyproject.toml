@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py2graphdb"
+version = "0.0.1"
+description = "Python wrapper for GraphDB and SPARQL interface"
+authors = [
+    { name = "Bart Gajderowicz", email = "bgajdero@gmail.com" },
+]
+requires-python = ">=3.10"
+
+# Requirements: This is done differently by poetry!
+dependencies = [
+    "git+https://github.com/csse-uoft/graphdb-importer"
+]
+
+[project.urls]
+repository = "https://github.com/csse-uoft/py2graphdb"
+
+[project.scripts]
+graphdb-importer = "py2graphdb:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["py2graphdb", "py2graphdb.*"]
+
+keywords = ['python', 'grpahdb', 'ontotext', 'sparql']
+
+[tool.poetry]
+readme = "README.md"
+classifiers= [
+    "Development Status :: 1 - Planning",
+    "Topic :: Database"
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.10",
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+]
+

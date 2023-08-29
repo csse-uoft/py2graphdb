@@ -9,16 +9,16 @@ dependencies:
   # to fix this problem with cartopy: https://github.com/SciTools/cartopy/issues/1940
   - pygeos
   # to fix install problem: https://github.com/sdorkenw/MeshParty/issues/63
-  - pyyaml=6.0=py38hb991d35_5
+  - pyyaml
   - readline
   - regex
   - requests
-  - sacremoses=master=py_0
+  # - sacremoses=master=py_0
   - setuptools
   - six=1.16.0=pyh6c4a22f_0
   - tqdm
-  - urllib3=1.26.13=pyhd8ed1ab_0
-  - yaml=0.2.5=h3422bc3_2
+  - urllib3
+  - yaml
   ####################
   - xlsxwriter
   - unidecode

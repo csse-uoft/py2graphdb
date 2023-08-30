@@ -20,11 +20,8 @@ readme = "README.md"
 [project.urls]
 repository = "https://github.com/csse-uoft/py2graphdb"
 
-[project.scripts]
-py2graphdb = "py2graphdb:cli"
-
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["py2graphdb", "py2graphdb.*"]
 
 

@@ -83,8 +83,8 @@ class UnitTestNode1(GraphNode):
         super().__init__(inst_id=inst_id, keep_db_in_synch=keep_db_in_synch)
 
         
-
-    imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
+    from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
+    imported_code = open('./src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
     exec(imported_code)
 
 
@@ -119,6 +119,7 @@ class UnitTestNode2(UnitTestNode1):
         super().__init__(inst_id=inst_id, keep_db_in_synch=keep_db_in_synch)
 
 
+    from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
     imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
     exec(imported_code)
 
@@ -154,6 +155,7 @@ class UnitTestNode3(UnitTestNode2):
         super().__init__(inst_id=inst_id, keep_db_in_synch=keep_db_in_synch)
 
 
+    from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
     imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
     exec(imported_code)
 

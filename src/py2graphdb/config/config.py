@@ -1,4 +1,4 @@
-from src.py2graphdb.utils.sparql_client import SparqlClient
+from ..utils.sparql_client import SparqlClient
 import yaml, os, ast
 from yaml.loader import SafeLoader
 

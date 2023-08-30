@@ -1,7 +1,7 @@
-from src.utils.db_utils import SPARQLDict, PropertyList,get_instance_label, resolve_nm_for_ttl, resolve_nm_for_dict, Thing, ThingClass
+from src.py2graphdb.utils.db_utils import SPARQLDict, PropertyList,get_instance_label, resolve_nm_for_ttl, resolve_nm_for_dict, Thing, ThingClass
 
 import re, hashlib
-from config import config as CONFIG
+from src.py2graphdb.config import config as CONFIG
 from datetime import datetime
 class GraphNode(Thing):
     """
@@ -36,7 +36,7 @@ class GraphNode(Thing):
     def id(self):
         return self.inst_id
 
-    imported_code = open('src/utils/_model_getters_setters_deleters.py').read()
+    imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
     exec(imported_code)
 
     def __repr__(self):

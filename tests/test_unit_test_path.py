@@ -1,8 +1,8 @@
 import unittest
-from src.utils.misc_lib import *
+from src.py2graphdb.utils.misc_lib import *
 import os
 
-from config import config as CONFIG
+from src.py2graphdb.config import config as CONFIG
 
 if os.path.exists(CONFIG.LOG_FILE):
     os.remove(CONFIG.LOG_FILE)
@@ -16,7 +16,7 @@ CONFIG.STORE_LOCAL = False
 with utest:
     from pprint import pprint
     import numpy as np
-    from src.utils.db_utils import SPARQLDict
+    from src.py2graphdb.utils.db_utils import SPARQLDict
     from tests.unit_test_ks import UnitTestNode1, UnitTestNode2, UnitTestNode3
     print()
 

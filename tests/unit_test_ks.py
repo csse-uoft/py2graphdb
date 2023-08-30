@@ -1,10 +1,10 @@
 from __main__ import *
-from src.Models.graph_node import GraphNode
-from src.utils.db_utils import PropertyList, SPARQLDict, Thing
+from src.py2graphdb.Models.graph_node import GraphNode
+from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, Thing
 from owlready2 import default_world, ObjectProperty, DataProperty, rdfs, Thing 
-from config import config as CONFIG
+from src.py2graphdb.config import config as CONFIG
 utest = default_world.get_ontology(CONFIG.NM)
-from src.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
+from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
 
 with utest:
     class hasOneStr(DataProperty):
@@ -84,7 +84,7 @@ class UnitTestNode1(GraphNode):
 
         
 
-    imported_code = open('src/utils/_model_getters_setters_deleters.py').read()
+    imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
     exec(imported_code)
 
 
@@ -119,7 +119,7 @@ class UnitTestNode2(UnitTestNode1):
         super().__init__(inst_id=inst_id, keep_db_in_synch=keep_db_in_synch)
 
 
-    imported_code = open('src/utils/_model_getters_setters_deleters.py').read()
+    imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
     exec(imported_code)
 
 
@@ -154,6 +154,6 @@ class UnitTestNode3(UnitTestNode2):
         super().__init__(inst_id=inst_id, keep_db_in_synch=keep_db_in_synch)
 
 
-    imported_code = open('src/utils/_model_getters_setters_deleters.py').read()
+    imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
     exec(imported_code)
 

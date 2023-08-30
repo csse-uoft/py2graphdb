@@ -1,4 +1,4 @@
-from config import config as CONFIG
+from src.py2graphdb.config import config as CONFIG
 import os
 if os.path.exists(CONFIG.LOG_FILE):  os.remove(CONFIG.LOG_FILE)
 
@@ -13,9 +13,9 @@ exec(f"{CONFIG.PREFIX} = default_world.get_namespace(\"{CONFIG.NM}\")")
 
 rdf_nm =  default_world.get_namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
 
-from src.ontology.extra import *
+from src.py2graphdb.ontology.extra import *
 
-from src.utils.misc_lib import *
+from src.py2graphdb.utils.misc_lib import *
 import collections
 import uuid
 

@@ -1,8 +1,8 @@
 import unittest
-from src.utils.misc_lib import *
+from src.py2graphdb.utils.misc_lib import *
 import os
 
-from config import config as CONFIG
+from src.py2graphdb.config import config as CONFIG
 
 if os.path.exists(CONFIG.LOG_FILE): os.remove(CONFIG.LOG_FILE)
 
@@ -31,8 +31,8 @@ with utest:
     from pprint import pprint
     import re
     import numpy as np
-    from src.utils.db_utils import global_db
-    from src.utils.db_utils import resolve_nm_for_ttl, SPARQLDict
+    from src.py2graphdb.utils.db_utils import global_db
+    from src.py2graphdb.utils.db_utils import resolve_nm_for_ttl, SPARQLDict
     print()
 
 class TestSPARQLDict(unittest.TestCase):

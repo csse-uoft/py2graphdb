@@ -1,5 +1,5 @@
 import re
-from src.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
+from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
 
 @classmethod
 def search(cls, props={}, how='first', subclass=False):

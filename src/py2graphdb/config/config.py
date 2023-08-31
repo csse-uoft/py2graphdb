@@ -2,7 +2,7 @@ from ..utils.sparql_client import SparqlClient
 import yaml, os, ast
 from yaml.loader import SafeLoader
 
-CONFIG_PATH = open('./src/py2graphdb/config/import_config_path.txt').readlines()[0].strip()
+CONFIG_PATH = open('./config/import_config_path.txt').readlines()[0].strip()
 
 if CONFIG_PATH.startswith('~/'):
     CONFIG_PATH = os.path.expanduser("~") + CONFIG_PATH.replace('~/','/')

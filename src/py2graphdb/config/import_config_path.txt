@@ -1,1 +1,0 @@
-./src/py2graphdb/config/unit_test_config.yml

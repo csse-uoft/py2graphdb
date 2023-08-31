@@ -1,5 +1,4 @@
 import re
-# from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
 
 @classmethod
 def search(cls, props={}, how='first', subclass=False):
@@ -8,7 +7,6 @@ def search(cls, props={}, how='first', subclass=False):
 
 
 def save(self):
-    # print('store', self)
     for val,props in self.relations.items():
         pred = re.sub('^\.', f'{CONFIG.PREFIX}.', str(props['pred']))
         value = getattr(self, f'_{val}')
@@ -37,7 +35,6 @@ def load(self, inst=None):
     if inst is not None:
         for val,props in self.relations.items():
             pred = props['pred']
-            # pred = re.sub('^\.', f'{CONFIG.PREFIX}.', props['pred'])
             cardinality = props['cardinality']
             kind = pred.range[0]
             values = inst[pred] if pred in inst.keys() else []

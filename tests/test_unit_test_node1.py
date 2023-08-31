@@ -246,9 +246,13 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst10.one_int = 11987654
             test_inst10.one_float = 0.987456
             test_inst10.one_str = 'my name'
+            test_inst10.list_of_uris = 'utest.test1'
+            test_inst10.list_of_uris = 'utest.test2'
             self.assertEqual(test_inst10.one_int, 11987654)
             self.assertEqual(test_inst10.one_float, 0.987456)
             self.assertEqual(test_inst10.one_str, 'my name')
+            self.assertIn('utest.test1', test_inst10.list_of_uris)
+            self.assertIn('utest.test2', test_inst10.list_of_uris)
 
             test_inst10_dict = SPARQLDict._get(klass='utest.UnitTestNode1', inst_id=inst_id)
             test_inst10_obj = UnitTestNode1.load_from_inst(inst=test_inst10_dict)

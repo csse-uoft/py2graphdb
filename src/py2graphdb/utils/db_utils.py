@@ -650,7 +650,6 @@ class SPARQLDict():
 
     @classmethod
     def _add(cls, klass, inst_id=None, props={}):
-        # inst_id = resolve_nm_for_ttl(inst_id)
         inst = get_instance(klass=klass, props=props,inst_id=inst_id)
         ttl_query = row_to_turtle(inst)
         # INSERT

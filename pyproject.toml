@@ -9,7 +9,7 @@ description = "Python wrapper for GraphDB and SPARQL interface"
 authors = [
     { name = "Bart Gajderowicz", email = "bgajdero@gmail.com" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 readme = "README.md"
 
 # Requirements: This is done differently by poetry!

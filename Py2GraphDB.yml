@@ -28,6 +28,7 @@ dependencies:
     - Werkzeug
     - git+https://github.com/csse-uoft/owlready2.git
     - git+https://github.com/csse-uoft/graphdb-importer
+    - classproperty
 
 
 

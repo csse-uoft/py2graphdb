@@ -6,14 +6,17 @@ from src.py2graphdb.config import config as CONFIG
 
 if os.path.exists(CONFIG.LOG_FILE): os.remove(CONFIG.LOG_FILE)
 
-from owlready2 import default_world, onto_path, Thing
+from owlready2 import default_world, onto_path, Thing, DataProperty
 onto_path.append('input/ontology_cache/')
 
 utest = default_world.get_ontology(CONFIG.NM)
 
 CONFIG.STORE_LOCAL = False
 
-from owlready2.prop import DataProperty, rdfs
+from owlready2.prop import rdfs
+from src.py2graphdb.ontology.operators import *
+from src.py2graphdb.utils.db_utils import _resolve_nm, resolve_nm_for_ttl, resolve_nm_for_dict
+
 with utest:
     class TestThing(Thing):
         pass
@@ -26,6 +29,13 @@ with utest:
         rdfs.comment = ["Desc for the object"]
         range = [str]
 
+    class hasint(DataProperty):
+        rdfs.comment = ["Int for the object"]
+        range = [int]
+
+    class hasUUID(DataProperty):
+        rdfs.comment = ["UUID for the object, if applicable"]
+        range = [str]
 
 with utest:
     from pprint import pprint
@@ -233,6 +243,104 @@ class TestSPARQLDict(unittest.TestCase):
             self.assertEqual(len(inst2[utest.title]), 2)
             self.assertIn("A NEW desc #2" in inst2[utest.desc] and f"this is my NEW trace ({rr}).", inst2[utest.desc])
             self.assertEqual(len(inst2[utest.desc]), 2)
+
+
+    def test_30(self):
+        with utest:
+            # mimic resolve_nm_for_ttl
+            res = _resolve_nm(utest.TestThing, from_delimiter='.', to_delimiter=':')
+            self.assertEqual(res, 'utest:TestThing')
+
+    def test_31(self):
+        with utest:
+            # mimic resolve_nm_for_ttl
+            res = _resolve_nm('.TestThing', from_delimiter='.', to_delimiter=':')
+            self.assertEqual(res, 'utest:TestThing')
+
+    def test_32(self):
+        with utest:
+            # mimic resolve_nm_for_ttl
+            res = _resolve_nm('utest:TestThing', from_delimiter='.', to_delimiter=':')
+            self.assertEqual(res, 'utest:TestThing')
+
+    def test_33(self):
+        with utest:
+            # mimic resolve_nm_for_ttl
+            res = _resolve_nm(':TestThing', from_delimiter='.', to_delimiter=':')
+            self.assertEqual(res, 'utest:TestThing')
+
+    def test_40(self):
+        with utest:
+            # mimic resolve_nm_for_dict
+            res = _resolve_nm(utest.TestThing, from_delimiter=':', to_delimiter='.')
+            self.assertEqual(res, 'utest.TestThing')
+
+    def test_41(self):
+        with utest:
+            # mimic resolve_nm_for_dict
+            res = _resolve_nm('.TestThing', from_delimiter=':', to_delimiter='.')
+            self.assertEqual(res, 'utest.TestThing')
+
+    def test_42(self):
+        with utest:
+            # mimic resolve_nm_for_dict
+            res = _resolve_nm('utest:TestThing', from_delimiter=':', to_delimiter='.')
+            self.assertEqual(res, 'utest.TestThing')
+
+    def test_43(self):
+        with utest:
+            # mimic resolve_nm_for_dict
+            res = _resolve_nm(':TestThing', from_delimiter=':', to_delimiter='.')
+            self.assertEqual(res, 'utest.TestThing')
+
+
+    def test_50(self):
+        # resolve_nm_for_ttl
+        with utest:
+            res = resolve_nm_for_ttl(utest.TestThing)
+            self.assertEqual(res, 'utest:TestThing')
+
+    def test_51(self):
+        # resolve_nm_for_ttl
+        with utest:
+            res = resolve_nm_for_ttl('.TestThing')
+            self.assertEqual(res, 'utest:TestThing')
+
+    def test_52(self):
+        # resolve_nm_for_ttl
+        with utest:
+            res = resolve_nm_for_ttl('utest:TestThing')
+            self.assertEqual(res, 'utest:TestThing')
+
+    def test_53(self):
+        # resolve_nm_for_ttl
+        with utest:
+            res = resolve_nm_for_ttl(':TestThing')
+            self.assertEqual(res, 'utest:TestThing')
+
+    def test_60(self):
+        # resolve_nm_for_dict
+        with utest:
+            res = resolve_nm_for_dict(utest.TestThing)
+            self.assertEqual(res, 'utest.TestThing')
+
+    def test_61(self):
+        # resolve_nm_for_dict
+        with utest:
+            res = resolve_nm_for_dict('.TestThing')
+            self.assertEqual(res, 'utest.TestThing')
+
+    def test_62(self):
+        # resolve_nm_for_dict
+        with utest:
+            res = resolve_nm_for_dict('utest:TestThing')
+            self.assertEqual(res, 'utest.TestThing')
+
+    def test_63(self):
+        # resolve_nm_for_dict
+        with utest:
+            res = resolve_nm_for_dict(':TestThing')
+            self.assertEqual(res, 'utest.TestThing')
 
 
 if __name__ == '__main__':

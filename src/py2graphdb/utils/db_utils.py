@@ -5,13 +5,20 @@ if os.path.exists(CONFIG.LOG_FILE):  os.remove(CONFIG.LOG_FILE)
 import csv, re, datetime, collections, pickle, unicodedata, io, os
 import datetime
 from copy import copy
+import warnings
 
 from owlready2 import default_world, onto_path, DataProperty, rdfs, Thing, ThingClass
 from owlready2.prop import PropertyClass
+from ..ontology.operators import *
+
 onto_path.append('input/ontology_cache/')
 exec(f"{CONFIG.PREFIX} = default_world.get_namespace(\"{CONFIG.NM}\")")
 
 rdf_nm =  default_world.get_namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+
+# from owlready2 import ObjectProperty, DataProperty, rdfs, Thing
+
+
 
 from ..ontology.extra import *
 
@@ -22,9 +29,9 @@ import uuid
 
 PREFIX = CONFIG.PREFIX
 
-class hasUUID(DataProperty):
-    rdfs.comment = ["UUID for the object, if applicable"]
-    range = [str]
+# class hasUUID(DataProperty):
+#     rdfs.comment = ["UUID for the object, if applicable"]
+#     range = [str]
 
 # global variable that stores the working dict of data.
 # It is used in place of the owlready2 sqllite3, as its more efficient.
@@ -359,10 +366,10 @@ def get_instance(klass=None,nm=CONFIG.PREFIX, inst_id=None, props={}):
     if inst is not None:
         inst.snapshot()
         uuid_prop = eval(nm+'.hasUUID')
-        if inst_id is None and (inst['ID']==[] or inst[uuid_prop] == []):
+        if (inst_id is None and inst['ID']==[]) or (uuid_prop  is not None and inst[uuid_prop] == []):
             uuid_inst = uuid.uuid4()
             inst_id = get_instance_label(klass=klass, uuid_inst=uuid_inst)
-            inst[uuid_prop] = str(uuid_inst)
+            if uuid_prop is not None:       inst[uuid_prop] = str(uuid_inst)
         # update_run_label(inst, nm)
         inst.snapshot()
 
@@ -378,7 +385,8 @@ def get_instance(klass=None,nm=CONFIG.PREFIX, inst_id=None, props={}):
         if inst_id is None:
             uuid_inst = uuid.uuid4()
             inst_id = get_instance_label(klass=klass, uuid_inst=uuid_inst)
-            inst[eval(nm+'.hasUUID')] = str(uuid_inst)
+            prop_eval = eval(nm+'.hasUUID')
+            if prop_eval is not None:         inst[prop_eval] = str(uuid_inst)
 
         for prop,val in properties.items():
             if val is None: continue       
@@ -437,7 +445,9 @@ def get_blank_instance(klass, nm=CONFIG.PREFIX, inst_id = None):
     inst['ID'] = inst_id
     inst['is_a'] = klass
     # inst=klass(inst_id)
-    inst[eval(nm+'.hasUUID')] = str(uuid_inst)
+    prop_eval = eval(nm+'.hasUUID')
+    if prop_eval is not None:
+        inst[prop_eval] = str(uuid_inst)
     # update_run_label(inst, nm)
     inst.snapshot()
 
@@ -478,21 +488,26 @@ def _resolve_nm(val, from_delimiter=':', to_delimiter='.'):
 
     res = ''
     if isinstance(val, str):
-        match = re.findall(f'(.*)\\{to_delimiter}([^\\{to_delimiter}]+)', val)
+        match = re.findall(f'(.+)\\{to_delimiter}([^\\{to_delimiter}]+)', val)
         if len(match) > 0:
             res = val
         else:
-            match = re.findall(f'(.*)\\{from_delimiter}([^\\{from_delimiter}]+)', val)
-            if len(match) == 0:
-                res = f"{CONFIG.PREFIX}{to_delimiter}{encode_inst(val)}"
+            match = re.findall(f'^\\{to_delimiter}([^\\{to_delimiter}]+)', val)
+            if len(match) > 0:
+                res = f"{CONFIG.PREFIX}{to_delimiter}{encode_inst(match[0])}"
             else:
-                if match[0][0] == '': res = f"{CONFIG.PREFIX}{to_delimiter}{encode_inst(match[0][1])}"
-                else: res = f"{match[0][0]}{to_delimiter}{encode_inst(match[0][1])}"
+                match = re.findall(f'(.*)\\{from_delimiter}([^\\{from_delimiter}]+)', val)
+                if len(match) == 0:
+                    res = f"{CONFIG.PREFIX}{to_delimiter}{encode_inst(val)}"
+                else:
+                    if match[0][0] == '': res = f"{CONFIG.PREFIX}{to_delimiter}{encode_inst(match[0][1])}"
+                    else: res = f"{match[0][0]}{to_delimiter}{encode_inst(match[0][1])}"
     elif isinstance(val, datetime.datetime):
         res = '"'+val.strftime("%Y-%m-%dT%H:%M:%S")+'"'
 
     else:
         res = val
+
     return res
 def resolve_nm_for_ttl(val):
     return _resolve_nm(val, from_delimiter='.', to_delimiter=':')
@@ -538,7 +553,12 @@ def load_global_db(filename='global_db.pickle'):
 
 from rdflib import Literal,URIRef
 def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s'):
-    """convert global_db value to Turtle format"""
+    """
+    convert dictionary value to Turtle format
+    generates variable names for Operator-wrapped properties.
+        call row_to_sparql_filters() to get fitlers aligned with tutrle output
+    """
+
     found_properties = False
     if inst.get('ID'):
         s = resolve_nm_for_ttl(inst['ID'])
@@ -553,9 +573,12 @@ def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s'):
         found_properties = True
     else:
         text += f"{s} "
-    i = 0    
-    for prop,vals in inst.items():
-        i += 1
+    for prop_i, (prop,vals) in enumerate(inst.items()):
+        op = None
+        if isinstance(prop, Operator):
+            op = prop
+            prop = op.prop
+
         if prop in ['is_a', 'ID']:
             continue
         if not isinstance(vals,(PropertyList,list)):
@@ -575,9 +598,59 @@ def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s'):
             elif len(prop_eval.range)>0 and prop_eval.range[0] != Thing :     o = Literal(str(val)).n3()+f"^^{prop_eval.range[0]}"
             else:                            o = resolve_nm_for_ttl(val)
             prop_str = resolve_nm_for_ttl(prop)
-            text += f"    {prop_str} {o};\n"
+
+            if isinstance(op, Operator):
+                text += f"    {prop_str} ?var_{prop_i};\n"
+            else:
+                text += f"    {prop_str} {o};\n"
+
             found_properties = True
     text += ".\n"
+    return text if found_properties else None
+
+def row_to_sparql_filters(inst, s_label='s'):
+    """convert dict with operators to SPARQL FILTER() format"""
+    found_properties = False
+    if inst.get('ID'):
+        s = resolve_nm_for_ttl(inst['ID'])
+    else:
+        s = f'?{s_label}'
+    text = ''
+
+    for prop_i, (op,vals) in enumerate(inst.items()):
+        if not issubclass(type(op), Operator):
+            continue
+        if not isinstance(vals,(PropertyList,list)):
+            vals = [vals]
+        filter_vals = []
+        for val in set(vals):
+            if val is None:
+                continue
+            prop = op.prop
+            prop2 = str(prop).replace(':','.')
+            prop2 = re.sub('^\.', f'{CONFIG.PREFIX}.', prop2)
+            if isinstance(prop2, str):   prop_eval = eval(prop2)
+            else:                       prop_eval = prop2
+            # if str in ranges:       o = '"'+str(val).replace('\\', '\\\\').replace('"','\\"') + '"'
+            if prop_eval is None:            o = resolve_nm_for_ttl(val)
+            elif str in prop_eval.range:     o = Literal(str(val)).n3()
+            elif int in prop_eval.range:     o = Literal(int(val)).n3()
+            elif float in prop_eval.range:   o = Literal(float(val)).n3()
+            elif len(prop_eval.range)>0 and prop_eval.range[0] != Thing :     o = Literal(str(val)).n3()+f"^^{prop_eval.range[0]}"
+            else:                            o = resolve_nm_for_ttl(val)
+            filter_vals.append(o)
+        # add the propert/value pair to the query or 
+        # if an perator, add ?i_var to query and filter for ?i_var after
+        if isinstance(op, (has, nothas)):
+            if not isinstance(vals,(PropertyList,list)):
+                filter_vals = [filter_vals]
+        elif isinstance(vals,(PropertyList,list)):
+            filter_vals = filter_vals[0]
+        tmp_var = f'?var_{prop_i}'
+        text += f"{op.to_sparql(val=filter_vals, var=tmp_var)}.\n"
+
+        found_properties = True
+
     return text if found_properties else None
 
 def save_db_as_ttl(filename='global_db.ttl', dict_db=None):
@@ -764,34 +837,60 @@ class SPARQLDict():
         results = []
         limit_str = 'LIMIT 1' if how=='first' else ''
         separator = '###'
-        inst = props.copy()
-        inst['ID'] = inst_id
-        inst['is_a'] = klass
-        ttl_query = row_to_turtle(inst, subclass=subclass)
-        if subclass:
-            relations = list(set(flatten([[k2['pred']for k2 in k.relations.values()]  for k in eval(f"{klass}.subclasses()")])))
-        else:
-            relations = [v['pred'] for v in eval(f"{klass}.relations.values()")]
-        prop_keys = dict([[f"o{pi}", p] for pi,p in enumerate(relations)])
-        query_rels = f"BIND({resolve_nm_for_ttl(inst.get('ID'))} as ?s).\n" if inst.get('ID') else ''
+        inst_wrapper = props.copy()
+        inst_wrapper['ID'] = inst_id
+        inst_wrapper['is_a'] = klass
+        ttl_query = row_to_turtle(inst_wrapper, subclass=subclass) or ''
+        filter_query = row_to_sparql_filters(inst_wrapper) or ''
+
+        grounded_props = [p for p in inst_wrapper.keys() if issubclass(type(p), PropertyClass)]
+        filter_props = [p.prop for p in inst_wrapper.keys() if issubclass(type(p), Operator)]
+
+        klass_object = eval(f"{resolve_nm_for_dict(klass)}")
+        try:
+            klass_object.relations
+            if subclass:
+                relations = list(set(flatten([[k2['pred']for k2 in k.relations.values()]  for k in eval(f"{resolve_nm_for_dict(klass)}.subclasses()")])))
+            else:
+                relations = [v['pred'] for v in eval(f"{resolve_nm_for_dict(klass)}.relations.values()")]
+        except AttributeError:
+            relations = []
+        prop_vars = dict([[f"o{pi}", p] for pi,p in enumerate(relations)])
+        optional_prop_vars = dict([(pv,p) for pv,p in prop_vars.items() if p not in grounded_props + filter_props])
+        query_rels = f"BIND({resolve_nm_for_ttl(inst_wrapper.get('ID'))} as ?s).\n" if inst_wrapper.get('ID') else ''
         query_rels += "?s a ?stype.\n"
-        query_rels += ".\n".join([f"OPTIONAL{{?s {resolve_nm_for_ttl(p)} ?{pk}_0 }}" for pk,p in prop_keys.items()])
-        query_select = ' '.join([f"(GROUP_CONCAT(?{pk}_0; separator='{separator}') AS ?{pk})" for pk in prop_keys.keys()])
+        
+        for pv,p in optional_prop_vars.items():
+            if p not in grounded_props + filter_props:
+                query_rels += f"OPTIONAL{{?s {resolve_nm_for_ttl(p)} ?{pv}_0 }}\n" 
+
+        query_select = ' '.join([f"(GROUP_CONCAT(?{pv}_0; separator='{separator}') AS ?{pv})" for pv in prop_vars.keys()])
+
         # need to exclude graph for subclasses, if outside of this graph
         graph_query = f"FROM <{CONFIG.GRAPH_NAME}>" if not subclass else ''
+
+        where_query = ''
+        if ttl_query is not None: where_query += ttl_query
+        where_query += query_rels
+        if filter_query is not None: 
+            if (len(where_query.strip())>0) and (not where_query.strip().endswith('.')):
+                where_query +=  '.'
+            where_query += '\n'+filter_query
+    
         query = f"""
             PREFIX {CONFIG.PREFIX}: <{CONFIG.NM}>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
             SELECT DISTINCT ?s ?stype {query_select}
             {graph_query}
-            WHERE {{ {ttl_query + query_rels}   }}
+            WHERE {{ {where_query}   }}
             GROUP BY ?s ?stype
             {limit_str}
             """
+
         result = CONFIG.client.execute_sparql(query)
 
         for res in result['results']['bindings']:
-            properties = SPARQLDict.sparql_to_dict(props=res, prop_keys=prop_keys, separator=separator)
+            properties = SPARQLDict.sparql_to_dict(props=res, prop_vars=prop_vars, separator=separator)
             # todo: update resolve_nm_for_dict to resolve this correctly
             klass_tmp = properties.get('is_a') or klass
             klass_tmp = re.sub('^\.', f'{CONFIG.PREFIX}.', str(klass_tmp))
@@ -812,14 +911,14 @@ class SPARQLDict():
         return cls._process_path_request(start=start, action='ask', end=end, preds=preds, direction=direction, how=how)
 
     @classmethod
-    def _children(cls, start, end, preds=[], how='first'):
-        return cls._process_path_request(start=start, action='collect', end=end, preds=preds, direction='children', how=how)
+    def _children(cls, start, end, preds=[], action='collect', how='first'):
+        return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction='children', how=how)
     @classmethod
-    def _parents(cls, start, end, preds=[], how='first'):
-        return cls._process_path_request(start=start, action='collect', end=end, preds=preds, direction='parents', how=how)
+    def _parents(cls, start, end, preds=[], action='collect', how='first'):
+        return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction='parents', how=how)
     @classmethod
-    def _path_collect(cls, start, end, preds=[], direction='children', how='first'):
-        return cls._process_path_request(start=start, action='collect', end=end, preds=preds, direction=direction, how=how)
+    def _path_collect(cls, start, end, preds=[], action='collect', direction='children', how='first'):
+        return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction=direction, how=how)
 
 
     @classmethod
@@ -834,7 +933,10 @@ class SPARQLDict():
             props = []
             for p in param:
                 if isinstance(p, str):                      inst_ids.append(p)
-                if issubclass(type(p), PropertyClass):      props.append(p)
+                elif issubclass(type(p), PropertyClass):    props.append(p)
+                elif issubclass(type(p), Operator):
+                    # TODO: set Operator with filter
+                    props.append(p.prop)
 
             if len(inst_ids) == 1:
                 _query = f"BIND({resolve_nm_for_ttl(str(param))} as ?{val})."
@@ -857,11 +959,11 @@ class SPARQLDict():
             raise(ValueError("start condition can't be empty."))
         end_query = SPARQLDict._build_node_query(param=end, val='end')
         if end_query == '':
-            raise(ValueError("end condition can't be empty."))
+            warnings.warn("end condition is empty and will search the entire graph.", category=RuntimeWarning)
 
         limit_bind_query = ''
         limit_query = ''
-        if action=='collect':
+        if action in ['collect', 'neighbours']:
             action_query = 'SELECT DISTINCT ?path ?start ?middle2 ?end ?index' 
             if how=='first':
                 limit_bind_query = 'filter(?path = 0).'
@@ -935,11 +1037,17 @@ class SPARQLDict():
                 {limit_bind_query}
         }}    ORDER BY ?path ?index {limit_query}
         """
+
         result = CONFIG.client.execute_sparql(query)
         if action =='ask'       : return result.get('boolean')
         if action == 'distance' : return cls._parse_distance_list(result['results']['bindings'])
-        if action == 'collect'  : 
+        if action in 'collect'  : 
             tmp = cls._parse_path_list(result['results']['bindings'])
+            if how=='first'     : return tmp[0] if len(tmp)>0 else None
+            else                : return tmp
+        if action in 'neighbours'  : 
+            tmp = cls._parse_path_list(result['results']['bindings'])
+            tmp = [t for t in tmp if len(t['path'])==0]
             if how=='first'     : return tmp[0] if len(tmp)>0 else None
             else                : return tmp
     @classmethod
@@ -948,8 +1056,8 @@ class SPARQLDict():
         for node in result:
             path.append({
                 'd'  : int(node['distance']['value']),
-                's'  : node['start']['value'],
-                'e'  : node['end']['value'],
+                's'  : node['start']['value']  if node.get('start') else None,
+                'e'  : node['end']['value']  if node.get('end') else None,
             })
 
         path_list = []
@@ -966,8 +1074,8 @@ class SPARQLDict():
         path = []
         for node in results:
             path.append({
-                's'  : node['start']['value'],
-                'e'  : node['end']['value'],
+                's'  : node['start']['value'] if node.get('start') else None,
+                'e'  : node['end']['value'] if node.get('end') else None,
                 'm'  : node['middle2']['value'],
                 'p'  : int(node['path']['value']),
                 'i'  : int(node['index']['value']),
@@ -984,19 +1092,22 @@ class SPARQLDict():
         path_list = []
         for ps in res.values():
             ps = sorted(ps, key=lambda d: d['i']) 
-            path_list.append({
-                'start' : resolve_nm_for_dict(re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.'   , ps[0]['s'])),
-                'end'   : resolve_nm_for_dict(re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.'   , ps[0]['e'])),
+            tmp = {
+                'start' : resolve_nm_for_dict(re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.'   , ps[0]['s']))  if ps[0].get('s') else None,
+                'end'   : resolve_nm_for_dict(re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.'   , ps[0]['e'])) if ps[0].get('e') else None,
                 'path'  : [resolve_nm_for_dict(re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.'  , d['m'])) for d in ps if d['m'] not in [d['s'],d['e']] ],
-            })
+            }
+            if tmp['end'] is None:
+                tmp['end'] = tmp['path'].pop()
+            path_list.append(tmp)
         return path_list
 
     @classmethod
-    def sparql_to_dict(cls, props, prop_keys=None, separator=None):
-        if prop_keys is None:
+    def sparql_to_dict(cls, props, prop_vars=None, separator=None):
+        if prop_vars is None:
             return cls.sparql_to_dict_from_spo(props=props)
         else:
-            return cls.sparql_to_dict_from_prop_keys(props=props, prop_keys=prop_keys, separator=separator)
+            return cls.sparql_to_dict_from_prop_vars(props=props, prop_vars=prop_vars, separator=separator)
 
     @classmethod
     def sparql_to_dict_from_spo(cls, props):
@@ -1027,15 +1138,18 @@ class SPARQLDict():
                 elif len(prop_eval.range)>0:     o = str(val)
                 else:                            o = resolve_nm_for_ttl(val)
 
-                if 'hasUUID' in p:
-                    properties[prop_eval] = o
-                else:
-                    properties[prop_eval].append(o)
+                try:
+                    if 'hasUUID' in str(prop_eval):
+                        if prop_eval is not None:   properties[prop_eval] = o
+                    else:
+                        properties[prop_eval].append(o)
+                except:
+                    pass
         if inst_id is not None: properties['ID'] = inst_id
         return properties
 
     @classmethod
-    def sparql_to_dict_from_prop_keys(cls, props, prop_keys=None, separator=None):
+    def sparql_to_dict_from_prop_vars(cls, props, prop_vars=None, separator=None):
         properties = ObjectDict(lambda:PropertyList())
         s = props['s']['value']
         s = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.', s)
@@ -1046,12 +1160,12 @@ class SPARQLDict():
             klass = props['stype']['value']
             klass = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.', klass)
             properties['is_a'] = eval(klass)
-        for pk,p in prop_keys.items():
+        for prop_var,p in prop_vars.items():
             klass = None
-            if pk not in props.keys():
+            if prop_var not in props.keys():
                 continue
 
-            vals = props[pk]['value']
+            vals = props[prop_var]['value']
             if separator:   vals = vals.split(separator)
             else:           vals = [vals]
             for val in vals:
@@ -1071,8 +1185,8 @@ class SPARQLDict():
                     elif len(prop_eval.range)>0:     o = str(val)
                     else:                            o = resolve_nm_for_ttl(val)
 
-                    if 'hasUUID' in str(p):
-                        properties[prop_eval] = o
+                    if 'hasUUID' in str(prop_eval):
+                        if prop_eval is not None:         properties[prop_eval] = o
                     else:
                         properties[prop_eval].append(o)
                 except ValueError:

@@ -6,6 +6,7 @@ import re
 import numpy as np
 
 from owlready2 import default_world, onto_path, DataProperty, ObjectProperty, rdfs, Thing
+# from .ontology.
 from .utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing, resolve_nm_for_ttl, row_to_turtle
 onto_path.append('input/ontology_cache/')
 from .config import config as CONFIG

@@ -11,6 +11,7 @@ from owlready2 import default_world, onto_path
 onto_path.append('input/ontology_cache/')
 
 utest = default_world.get_ontology(CONFIG.NM)
+from src.py2graphdb.ontology.operators import *
 
 CONFIG.STORE_LOCAL = False
 with utest:
@@ -96,7 +97,7 @@ class TestUnitTestPathConfig1(unittest.TestCase):
 
         _ = TestConfig(config_n=1)
 
-    def test_1(self):
+    def test1_1(self):
         with utest:
             start = 'utest.n1'
             end = 'utest.n9'
@@ -106,7 +107,7 @@ class TestUnitTestPathConfig1(unittest.TestCase):
                 {'end': 'utest.n9', 'path': ['utest.n5', 'utest.n3'], 'start': 'utest.n1'}]
             
 
-    def test_2(self):
+    def test1_2(self):
         with utest:
             start = 'utest.n1'
             end = 'utest.n9'
@@ -119,28 +120,28 @@ class TestUnitTestPathConfig1(unittest.TestCase):
             res = SPARQLDict._process_path_request(start, end, action='collect', direction='children', how='shortest')
             self.assertEqual( res ,  [{'end': 'utest.n9', 'path': ['utest.n5', 'utest.n3'], 'start': 'utest.n1'}])
 
-    def test_3(self):
+    def test1_3(self):
         with utest:
             start = 'utest.n1'
             end = 'utest.n9'
             res = SPARQLDict._process_path_request(start, end, action='ask', direction='children', how='all')
             self.assertTrue(res)
 
-    def test_4(self):
+    def test1_4(self):
         with utest:
             start = 'utest.n1'
             end = 'utest.n6'
             res = SPARQLDict._process_path_request(start, end, action='ask', direction='children', how='all')
             self.assertFalse(res)
 
-    def test_5(self):
+    def test1_5(self):
         with utest:
             start = 'utest.n1'
             end = 'utest.n4'
             res = SPARQLDict._process_path_request(start, end, action='distance', direction='children', how='all')
             self.assertEqual( res ,  [{'distance': 3, 'end': 'utest.n4', 'start': 'utest.n1'}])
 
-    def test_6(self):
+    def test1_6(self):
         with utest:
             start = 'utest.n1'
             end = 'utest.n9'
@@ -151,7 +152,7 @@ class TestUnitTestPathConfig1(unittest.TestCase):
             )
 
 
-    def test_7(self):
+    def test1_7(self):
         with utest:
             start = 'utest.n9'
             end = 'utest.n1'
@@ -162,23 +163,79 @@ class TestUnitTestPathConfig1(unittest.TestCase):
             )
             
 
-    def test_8(self):
+    def test1_8(self):
         with utest:
             start = 'utest.n9'
             end = 'utest.n1'
             res = SPARQLDict._process_path_request(start, end, action='collect', preds=[utest.hasListOfURIs], direction='parents', how='first')
             assert res == {'end': 'utest.n1', 'path': ['utest.n3', 'utest.n5'], 'start': 'utest.n9'}
             
+    def test1_9(self):
+        with utest:
+            start = 'utest.n1'
+            res = SPARQLDict._process_path_request(start, None, action='neighbours', preds=[utest.hasListOfURIs], direction='children', how='all')
+            assert res == [
+                {'end': 'utest.n7', 'path': [], 'start': 'utest.n1'},
+                {'end': 'utest.n5', 'path': [], 'start': 'utest.n1'}
+            ]
 
+    def test1_10(self):
+        with utest:
+            start = 'utest.n1'
+            res = SPARQLDict._process_path_request(start, None, action='neighbours', preds=[utest.hasListOfURIs], direction='children', how='first')
+            assert res == {'end': 'utest.n5', 'path': [], 'start': 'utest.n1'}
 
-    def test_9(self):
+    def test1_11(self):
+        with utest:
+            start = 'utest.n9'
+            res = SPARQLDict._process_path_request(start, None, action='neighbours', preds=[utest.hasListOfURIs], direction='parents', how='all')
+            assert res == [
+                {'end': 'utest.n4', 'path': [], 'start': 'utest.n9'},
+                {'end': 'utest.n3', 'path': [], 'start': 'utest.n9'}
+            ]
+
+    def test1_12(self):
+        with utest:
+            start = 'utest.n9'
+            res = SPARQLDict._process_path_request(start, None, action='neighbours', preds=[utest.hasListOfURIs], direction='parents', how='first')
+            assert res == {'end': 'utest.n3', 'path': [], 'start': 'utest.n9'}
+
+    def test1_13(self):
+        with utest:
+            start = 'utest.n1'
+            res = SPARQLDict._process_path_request(start, None, action='collect', preds=[utest.hasListOfURIs], direction='children', how='all')
+            assert res == [
+                {'end': 'utest.n4', 'path': ['utest.n7', 'utest.n2'], 'start': 'utest.n1'},
+                {'end': 'utest.n9', 'path': ['utest.n7', 'utest.n2', 'utest.n4'], 'start': 'utest.n1'},
+                {'end': 'utest.n9', 'path': ['utest.n5', 'utest.n3'], 'start': 'utest.n1'},
+                {'end': 'utest.n2', 'path': ['utest.n7'], 'start': 'utest.n1'},
+                {'end': 'utest.n3', 'path': ['utest.n5'], 'start': 'utest.n1'},
+                {'end': 'utest.n7', 'path': [], 'start': 'utest.n1'},
+                {'end': 'utest.n5', 'path': [], 'start': 'utest.n1'}
+            ]
+
+    def test1_14(self):
+        with utest:
+            start = 'utest.n9'
+            res = SPARQLDict._process_path_request(start, None, action='collect', preds=[utest.hasListOfURIs], direction='parents', how='all')
+            assert res == [
+                {'end': 'utest.n7', 'path': ['utest.n4', 'utest.n2'], 'start': 'utest.n9'},
+                {'end': 'utest.n1', 'path': ['utest.n4', 'utest.n2', 'utest.n7'], 'start': 'utest.n9'},
+                {'end': 'utest.n1', 'path': ['utest.n3', 'utest.n5'], 'start': 'utest.n9'},
+                {'end': 'utest.n2', 'path': ['utest.n4'], 'start': 'utest.n9'},
+                {'end': 'utest.n5', 'path': ['utest.n3'], 'start': 'utest.n9'},
+                {'end': 'utest.n4', 'path': [], 'start': 'utest.n9'},
+                {'end': 'utest.n3', 'path': [], 'start': 'utest.n9'}
+            ]
+
+    def test1_15(self):
         with utest:
             start = 'utest.n1'
             end = 'utest.n9'
             res = SPARQLDict._process_path_request(start, end, action='distance', preds=[utest.hasListOfURIs], direction='children', how='all')
             self.assertEqual( res ,  [{'distance': 3, 'end': 'utest.n9', 'start': 'utest.n1'}])
 
-    def test_10(self):
+    def test1_16(self):
         with utest:
             start = 'utest.n1'
             end = [utest.hasListOfURIs]
@@ -192,54 +249,56 @@ class TestUnitTestPathConfig1(unittest.TestCase):
             )
 
 
-    def test_11(self):
+    def test1_17(self):
         with utest:
             start = 'utest.n1'
             end = [utest.hasListOfURIs]
             res = SPARQLDict._process_path_request(start, end, action='distance', direction='children', how='first')
             self.assertEqual( res ,  [{'start': 'utest.n1', 'end': 'utest.n2', 'distance': 2}])
 
-    def test_12(self):
+    def test1_18(self):
         with utest:
             start = 'utest.n9'
             end = 'utest.n1'
             res = SPARQLDict._process_path_request(start, end, action='distance', preds=[utest.hasListOfURIs], direction='parents', how='first')
             self.assertEqual( res ,  [{'distance': 3, 'end': 'utest.n1', 'start': 'utest.n9'}])
 
+    def test1_19(self):
         with utest:    
             start = 'utest.n1'
             end = 'utest.n9'
             res = SPARQLDict._process_path_request(start, end, action='collect', preds=[utest.hasListOfURIs], direction='parents', how='all')
             self.assertEqual( res ,  [])
 
-    def test_13(self):
+    def test1_20(self):
         with utest:
             start = 'utest.n9'
             end = 'utest.n1'
             res = SPARQLDict._process_path_request(start, end, action='collect', preds=[utest.hasListOfURIs], direction='children', how='all')
             self.assertEqual( res ,  [])
 
-    def test_14(self):
+    def test1_21(self):
         with utest:
             start = 'utest.n1'
             end = 'utest.n9'
             res = SPARQLDict._process_path_request(start, end, action='ask', preds=[utest.hasListOfURIs], direction='children', how='all')
             self.assertTrue(res)
 
+    def test1_21(self):
         with utest:    
             start = 'utest.n9'
             end = 'utest.n1'
             res = SPARQLDict._process_path_request(start, end, action='ask', preds=[utest.hasListOfURIs], direction='parents', how='first')
             self.assertTrue(res)
 
-    def test_15(self):
+    def test1_21(self):
         with utest:
             start = 'utest.n1'
             end = 'utest.n9'
             res = SPARQLDict._process_path_request(start, end, action='ask', preds=[utest.hasListOfURIs], direction='parents', how='all')
             self.assertFalse(res)
 
-    def test_16(self):
+    def test1_22(self):
         with utest:
             start = 'utest.n9'
             end = 'utest.n1'
@@ -265,7 +324,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
         SPARQLDict._clear_graph(graph=CONFIG.GRAPH_NAME)
         _ = TestConfig(config_n=2)
 
-    def test_20(self):
+    def test2_1(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:1}
@@ -276,7 +335,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             )
 
 
-    def test_18(self):
+    def test2_2(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:1}
@@ -284,14 +343,14 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertTrue(res)
 
 
-    def test_19(self):
+    def test2_3(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:1}
             res = SPARQLDict._path_exists(start, end, direction='children')
             self.assertTrue(res)
 
-    def test_20(self):
+    def test2_4(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:10}
@@ -299,7 +358,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertEqual( res ,  [])
 
 
-    def test_20(self):
+    def test2_5(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:10}
@@ -307,7 +366,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertFalse(res)
 
 
-    def test_21(self):
+    def test2_6(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:10}
@@ -315,7 +374,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertFalse(res)
 
 
-    def test_22(self):
+    def test2_7(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:10}
@@ -323,7 +382,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertIsNone(res)
 
 
-    def test_23(self):
+    def test2_8(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:10}
@@ -331,7 +390,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertFalse(res)
 
 
-    def test_24(self):
+    def test2_9(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:10}
@@ -339,7 +398,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertFalse(res)
 
 
-    def test_25(self):
+    def test2_10(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:3}
@@ -350,7 +409,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             )
 
 
-    def test_26(self):
+    def test2_11(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:3}
@@ -358,7 +417,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertTrue(res)
 
 
-    def test_27(self):
+    def test2_12(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:3}
@@ -366,7 +425,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertTrue(res)
 
 
-    def test_28(self):
+    def test2_13(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:3}
@@ -374,7 +433,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertEqual( res ,  {'start': 'utest.n1', 'end': 'utest.n4', 'path': ['utest.n7', 'utest.n2']})
 
 
-    def test_29(self):
+    def test2_14(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:3}
@@ -382,7 +441,7 @@ class TestUnitTestPathConfig2(unittest.TestCase):
             self.assertTrue(res)
 
 
-    def test_30(self):
+    def test2_15(self):
         with utest:
             start = 'utest.n1'
             end = {utest.hasOneInt:3}

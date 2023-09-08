@@ -2,6 +2,7 @@ from __main__ import *
 from src.py2graphdb.Models.graph_node import GraphNode
 from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, Thing
 from owlready2 import default_world, ObjectProperty, DataProperty, rdfs, Thing 
+from src.py2graphdb.ontology.operators import *
 from src.py2graphdb.config import config as CONFIG
 utest = default_world.get_ontology(CONFIG.NM)
 from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing

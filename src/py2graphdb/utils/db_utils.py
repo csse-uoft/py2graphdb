@@ -623,11 +623,13 @@ def row_to_sparql_filters(inst, s_label='s'):
             vals = [vals]
         filter_vals = []
         for val in set(vals):
-            if val is None:
-                continue
             prop = op.prop
             prop2 = str(prop).replace(':','.')
             prop2 = re.sub('^\.', f'{CONFIG.PREFIX}.', prop2)
+            op.set_normalized(resolve_nm_for_ttl(prop2))
+
+            if val is None:
+                continue
             if isinstance(prop2, str):   prop_eval = eval(prop2)
             else:                       prop_eval = prop2
             # if str in ranges:       o = '"'+str(val).replace('\\', '\\\\').replace('"','\\"') + '"'
@@ -643,10 +645,10 @@ def row_to_sparql_filters(inst, s_label='s'):
         if isinstance(op, (has, nothas)):
             if not isinstance(vals,(PropertyList,list)):
                 filter_vals = [filter_vals]
-        elif isinstance(vals,(PropertyList,list)):
+        elif isinstance(vals,(PropertyList,list)) and len(filter_vals)>0:
             filter_vals = filter_vals[0]
         tmp_var = f'?var_{prop_i}'
-        text += f"{op.to_sparql(val=filter_vals, var=tmp_var)}.\n"
+        text += f"{op.to_sparql(val=filter_vals, var=tmp_var, owner=s_label)}.\n"
 
         found_properties = True
 

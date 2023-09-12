@@ -14,6 +14,7 @@ CONFIG.STORE_LOCAL = False
 utest = default_world.get_ontology(CONFIG.NM)
 from src.py2graphdb.ontology.operators import *
 with utest:
+    from src.py2graphdb.Models.graph_node import GraphNode
     from src.py2graphdb.utils.db_utils import SPARQLDict
     from tests.unit_test_ks import UnitTestNode1
     print()
@@ -583,7 +584,19 @@ class TestUnitTestNode(unittest.TestCase):
             inst = SPARQLDict._get(klass=UnitTestNode1, inst_id=test_inst2.inst_id)
             self.assertNotIn(utest.hasOneInt, inst.keys())
 
+    def test_35(self):
+        # test find without klass, just inst_id
+        with utest:
+            test_inst2 = UnitTestNode1(keep_db_in_synch = True)
+            test_inst2.list_of_strs = 'abc'
+            test_inst2.list_of_strs = 'dfe'
+            test_inst2.list_of_strs = 'ghi'
+            test_inst2.one_str = 'abc'
+            test_inst2.one_int = 9999
 
+            inst_id = test_inst2.inst_id
+            test_inst2_load = GraphNode.find(inst_id=inst_id)
+            self.assertEqual(test_inst2_load.inst_id, inst_id)
 
     def test_40(self):
         # Test Operators on GraphNodes

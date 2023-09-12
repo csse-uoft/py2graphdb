@@ -23,7 +23,7 @@ class GraphNode(Thing):
     relations = {}
     created_at = None
     keep_db_in_synch = False
-
+    graph_is_a = None
     def __init__(self, inst_id=None, keep_db_in_synch=False) -> None:
         created_at = datetime.now()
         super().__init__()
@@ -37,7 +37,7 @@ class GraphNode(Thing):
         return self.inst_id
 
 
-    from ..utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
+    from ..utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing, resolve_nm_for_dict
     from ..utils import db_utils
     def_file_path = os.path.dirname(db_utils.__file__) + '/_model_getters_setters_deleters.py'
     imported_code = open(def_file_path).read()
@@ -89,13 +89,18 @@ class GraphNode(Thing):
         return
 
 
+    def cast_to_graph_type(self):
+        if self.graph_is_a:
+            self.graph_is_a(self)
+
+
     @classmethod
     def find(cls, inst_id):
         """Find an existing text query with the given parameters and return it.
 
         :return: found/generated text query
         """
-        inst = SPARQLDict._get(klass=cls.klass,inst_id=inst_id)
+        inst = SPARQLDict._get(inst_id=inst_id)
         if inst is not None:
             return cls.load_from_inst(inst=inst) if inst else None
         else:

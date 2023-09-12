@@ -244,6 +244,43 @@ class TestSPARQLDict(unittest.TestCase):
             self.assertIn("A NEW desc #2" in inst2[utest.desc] and f"this is my NEW trace ({rr}).", inst2[utest.desc])
             self.assertEqual(len(inst2[utest.desc]), 2)
 
+    def test_20(self):
+        # test _get() without klass, only inst_id
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:["My title"], utest.desc:f"this is my trace ({rr})."})
+            inst_id = inst['ID']
+            inst2 = SPARQLDict._get(inst_id=inst_id)
+            self.assertIn('ID', inst2.keys())
+            self.assertIn('is_a', inst2.keys())
+            self.assertIn(utest.desc, inst2.keys())
+            self.assertIn(utest.hasUUID, inst2.keys())
+            self.assertIn(utest.title, inst2.keys())
+            self.assertEqual(inst2['ID'], inst_id)
+            self.assertEqual(inst2[utest.desc], [f"this is my trace ({rr})."])
+            self.assertEqual(inst['is_a'], utest.TestThing)
+
+    def test_21(self):
+        # test _update() without klass, only inst_id and new properties
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:["My title"], utest.desc:f"this is my trace ({rr})."})
+            inst_id = inst['ID']
+            new_props = {utest.title:['My NEW Title 1','My NEW Title 2' ], utest.desc:[f"this is my NEW trace ({rr}).", "A NEW desc #2"]}
+            inst2 = SPARQLDict._update(inst_id=inst_id, new=new_props)
+            self.assertIn('ID', inst2.keys())
+            self.assertIn('is_a', inst2.keys())
+            self.assertIn(utest.desc, inst2.keys())
+            self.assertIn(utest.hasUUID, inst2.keys())
+            self.assertIn(utest.title, inst2.keys())
+            self.assertEqual(len(inst2.keys()), 5)
+            self.assertIn('My NEW Title 1', inst2[utest.title])
+            self.assertIn('My NEW Title 2', inst2[utest.title])
+            self.assertEqual(len(inst2[utest.title]), 2)
+            self.assertIn("A NEW desc #2" in inst2[utest.desc] and f"this is my NEW trace ({rr}).", inst2[utest.desc])
+            self.assertEqual(len(inst2[utest.desc]), 2)
+
+
 
     def test_30(self):
         with utest:

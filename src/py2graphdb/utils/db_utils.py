@@ -352,7 +352,7 @@ def get_instance(klass=None,nm=CONFIG.PREFIX, inst_id=None, props={}):
     prop_keys = [[str(k),k] for k in props.keys()]
     prop_keys.sort(key=lambda x: x[0])  # changes the list in-place (and returns None)
     properties = dict(collections.OrderedDict({k: props[k] for _,k in prop_keys}))
-    if 'is_a' in properties.keys(): del properties['is_a']
+    if 'is_a' in properties.keys() and properties.get('is_a') is None: del properties['is_a']
 
     if inst is None and properties != {} and CONFIG.STORE_LOCAL:
         # inst not found and parameters not empty, hence can use parameters as unique search key.
@@ -381,7 +381,7 @@ def get_instance(klass=None,nm=CONFIG.PREFIX, inst_id=None, props={}):
                 inst[prop] = PropertyList(set(val))
     else:
         inst = ObjectDict(lambda:PropertyList(), properties)
-        inst['is_a'] = klass
+        if klass: inst['is_a'] = klass
         if inst_id is None:
             uuid_inst = uuid.uuid4()
             inst_id = get_instance_label(klass=klass, uuid_inst=uuid_inst)
@@ -444,7 +444,6 @@ def get_blank_instance(klass, nm=CONFIG.PREFIX, inst_id = None):
     inst = ObjectDict(lambda:PropertyList())
     inst['ID'] = inst_id
     inst['is_a'] = klass
-    # inst=klass(inst_id)
     prop_eval = eval(nm+'.hasUUID')
     if prop_eval is not None:
         inst[prop_eval] = str(uuid_inst)
@@ -736,7 +735,7 @@ class SPARQLDict():
         return inst
 
     @classmethod
-    def _get(cls, klass, inst_id=None, props={}):
+    def _get(cls, klass=None, inst_id=None, props={}):
         if inst_id is None and props=={}:
             raise(Exception("no criteria"))
         if inst_id is None and props != {}:
@@ -766,7 +765,7 @@ class SPARQLDict():
             query = f"""
                     PREFIX {CONFIG.PREFIX}: <{CONFIG.NM}>
                 SELECT DISTINCT ?s ?p ?o
-                FROM <{CONFIG.GRAPH_NAME}>
+                # FROM <{CONFIG.GRAPH_NAME}>
                 WHERE {{
                     BIND({inst_id} as ?s).
                     ?s ?p ?o}}
@@ -784,7 +783,7 @@ class SPARQLDict():
         return inst
 
     @classmethod
-    def _update(cls, klass, inst_id=None, drop=None, add=None, new=None):
+    def _update(cls, klass=None, inst_id=None, drop=None, add=None, new=None):
         if inst_id is None:
             return cls._add(klass=klass, props=add or new)
         inst_id = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}:', inst_id)
@@ -833,7 +832,44 @@ class SPARQLDict():
         return inst
 
     @classmethod
-    def _search(cls, klass, inst_id=None, props={}, how='first', subclass=False):
+    def _search(cls, query=None, klass=None, inst_id=None, props={}, how='first', subclass=False):
+        if klass is not None and query is None:
+            return cls._search_by_params(klass=klass, inst_id=inst_id, props=props, how=how, subclass=subclass)
+        elif klass is None and query is not None:
+            return cls._search_by_query(query=query)
+        else:
+            raise(ValueError(f"only of of klass and query can be None: klass=\"{klass}\"; query=\"{query}\""))
+        
+    # @classmethod
+    # def _search_by_query(cls, query):
+    #     separator = "###"
+    #     query = """
+    #             PREFIX utest: <http://utest/#>
+    #             SELECT DISTINCT *
+    #             WHERE { 
+    #             #    BIND(utest:n1 as ?start).
+    #                 ?s utest:title ?val;
+    #                     utest:desc ?list.
+    #             #    OPTIONAL{?start utest:hasListOfURIs ?l1}
+    #             #    filter(?val > 2).
+
+    #             } limit 1
+    #         """
+    #     result = CONFIG.client.execute_sparql(query)
+    #     # from src.py2graphdb.utils.db_utils import *
+
+    #     for res in result['results']['bindings']:
+    #         properties = SPARQLDict.sparql_to_dict(props=res, separator=separator)
+    #         # todo: update resolve_nm_for_dict to resolve this correctly
+    #         klass_tmp = properties.get('is_a') or klass
+    #         klass_tmp = re.sub('^\.', f'{CONFIG.PREFIX}.', str(klass_tmp))
+    #         inst = get_instance(klass=klass_tmp, inst_id=properties.get('ID'), props=properties)
+    #         results.append(inst)                
+
+    #     return results
+
+    @classmethod
+    def _search_by_params(cls, klass, inst_id=None, props={}, how='first', subclass=False):
         results = []
         limit_str = 'LIMIT 1' if how=='first' else ''
         separator = '###'
@@ -891,13 +927,14 @@ class SPARQLDict():
 
         for res in result['results']['bindings']:
             properties = SPARQLDict.sparql_to_dict(props=res, prop_vars=prop_vars, separator=separator)
-            # todo: update resolve_nm_for_dict to resolve this correctly
             klass_tmp = properties.get('is_a') or klass
-            klass_tmp = re.sub('^\.', f'{CONFIG.PREFIX}.', str(klass_tmp))
+            klass_tmp = resolve_nm_for_dict(klass_tmp)
             inst = get_instance(klass=klass_tmp, inst_id=properties.get('ID'), props=properties)
             results.append(inst)                
 
         return results
+
+    
 
     # find parents with pred
     # ask if any parents with pred

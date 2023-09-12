@@ -3,7 +3,7 @@ import re
 @classmethod
 def search(cls, props={}, how='first', subclass=False):
     insts = SPARQLDict._search(klass=cls.klass, props=props, how=how, subclass=subclass)
-    return [eval(f"{inst['is_a']}.load_from_inst(inst=inst)") for inst in insts]
+    return [eval(f"{resolve_nm_for_dict(inst['is_a'])}.load_from_inst(inst=inst)") for inst in insts]
 
 
 def save(self):
@@ -11,6 +11,8 @@ def save(self):
         pred = re.sub('^\.', f'{CONFIG.PREFIX}.', str(props['pred']))
         value = getattr(self, f'_{val}')
         inst = SPARQLDict._update(klass=self.klass,inst_id=self.inst_id, new={pred:value})
+    self.graph_is_a = inst.get('is_a')
+
 
 def delete(self):
     SPARQLDict._delete(inst_id=self.inst_id)
@@ -22,17 +24,25 @@ def load_from_inst(cls, inst):
     return tmp
 
 def load(self, inst=None):
-    if inst is not None:
+    if inst is not None and inst.get('ID'):
         self.inst_id = inst['ID']
 
     if inst is None and self.inst_id is not None:
-        inst = self.SPARQLDict._get(klass=self.klass,inst_id=self.inst_id)
+        inst = self.SPARQLDict._get(inst_id=self.inst_id)
         if inst is None:
             inst = self.SPARQLDict._add(klass=self.klass,inst_id=self.inst_id)
     elif inst is None and self.inst_id is None and self.keep_db_in_synch:
         inst = self.SPARQLDict._add(klass=self.klass)
 
+
     if inst is not None:
+        if self.inst_id is not None and self.inst_id != inst['ID']:
+            raise(ValueError, f"Unmatched inst_ids: {self.inst_id} != {inst['ID']}")
+
+        if self.inst_id is None:
+            self.inst_id = inst['ID']
+
+    if inst is not None:    
         for val,props in self.relations.items():
             pred = props['pred']
             cardinality = props['cardinality']
@@ -61,6 +71,8 @@ def load(self, inst=None):
                     exec(f"self._{val} = []")
             except AttributeError:
                 pass
+    if inst is not None: self.graph_is_a = inst.get('is_a')
+
 
 for val,props in relations.items():
     pred = props['pred']

@@ -14,7 +14,7 @@ CONFIG.STORE_LOCAL = False
 utest = default_world.get_ontology(CONFIG.NM)
 with utest:
     from src.py2graphdb.utils.db_utils import SPARQLDict
-    from tests.unit_test_ks import UnitTestNode2
+    from tests.unit_test_ks import UnitTestNode1, UnitTestNode2
     print()
 
 
@@ -554,6 +554,15 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst2.one_str = 'abc'
             test_inst2.one_int = 9999
 
+        with utest:
+            test_inst21 = UnitTestNode2()
+            test_inst21.keep_db_in_synch = True
+            test_inst21.list_of_strs = 'abc'
+            test_inst21.list_of_strs = 'dfe'
+            test_inst21.list_of_strs = 'ghi'
+            test_inst21.one_str = 'abc'
+            test_inst21.one_int = 9999
+
             test_inst2.drop('list_of_strs', 'dfe')
             test_inst2.drop('one_int', 9999)
             inst = SPARQLDict._get(klass=UnitTestNode2, inst_id=test_inst2.inst_id)
@@ -613,6 +622,100 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertEqual(test_inst2.list_of_ints_level2, [111112121313, 141415151616])
 
 
+    def test_40(self):
+        # test find of subclass, where superclass has same properties
+        with utest:
+            test_inst2 = UnitTestNode2(keep_db_in_synch = True)
+            test_inst2.list_of_strs = 'abc'
+            test_inst2.list_of_strs = 'dfe'
+            test_inst2.list_of_strs = 'ghi'
+            test_inst2.one_str = 'abc'
+            test_inst2.one_int = 9999
+            test_inst2.list_of_ints_level2 = 88991010
+            test_inst2.list_of_ints_level2 = 111112121313
+            test_inst2.list_of_ints_level2 = 141415151616
+
+            inst_id = test_inst2.inst_id
+            test_inst2_load = UnitTestNode1.find(inst_id=inst_id)
+            cast_test_inst2 = UnitTestNode2(test_inst2)
+            self.assertEqual(test_inst2_load.inst_id, inst_id)
+            self.assertEqual(test_inst2.one_int, 9999)
+            self.assertEqual(len(cast_test_inst2.list_of_ints_level2), 3)
+            self.assertIn(88991010, cast_test_inst2.list_of_ints_level2)
+            self.assertIn(111112121313, cast_test_inst2.list_of_ints_level2)
+            self.assertIn(141415151616, cast_test_inst2.list_of_ints_level2)
+
+    def test_41(self):
+        # test find of subclass, where superclass has same properties
+        with utest:
+            test_inst2 = UnitTestNode2(keep_db_in_synch = True)
+            test_inst2.list_of_strs = 'abc'
+            test_inst2.list_of_strs = 'dfe'
+            test_inst2.list_of_strs = 'ghi'
+            test_inst2.one_str = 'abc'
+            test_inst2.one_int = 9999
+            test_inst2.list_of_ints_level2 = 88991010
+            test_inst2.list_of_ints_level2 = 111112121313
+            test_inst2.list_of_ints_level2 = 141415151616
+
+            inst_id = test_inst2.inst_id
+            test_inst2_load = UnitTestNode1.find(inst_id=inst_id)
+            cast_test_inst2 = UnitTestNode2(test_inst2)
+
+
+            self.assertEqual(test_inst2_load.inst_id, inst_id)
+            self.assertEqual(test_inst2_load.one_int, 9999)
+            self.assertEqual(cast_test_inst2.one_int, 9999)
+            self.assertEqual(len(cast_test_inst2.list_of_ints_level2), 3)
+            self.assertIn(88991010, cast_test_inst2.list_of_ints_level2)
+            self.assertIn(111112121313, cast_test_inst2.list_of_ints_level2)
+            self.assertIn(141415151616, cast_test_inst2.list_of_ints_level2)
+
+
+    def test_42(self):
+        # test find of subclass, where superclass has same properties
+        with utest:
+            test_inst2 = UnitTestNode2(keep_db_in_synch = True)
+            test_inst2.list_of_strs = 'abc'
+            test_inst2.list_of_strs = 'dfe'
+            test_inst2.list_of_strs = 'ghi'
+            test_inst2.one_str = 'abc'
+            test_inst2.one_int = 9999
+            test_inst2.list_of_ints_level2 = 88991010
+            test_inst2.list_of_ints_level2 = 111112121313
+            test_inst2.list_of_ints_level2 = 141415151616
+
+            inst_id = test_inst2.inst_id
+            test_inst2_load = UnitTestNode1.find(inst_id=inst_id)
+            self.assertEqual(test_inst2_load.__class__,  utest.UnitTestNode1)
+            self.assertEqual(test_inst2_load.graph_is_a,  utest.UnitTestNode2)
+
+            UnitTestNode2(test_inst2_load)
+
+            self.assertEqual(test_inst2_load.__class__,  utest.UnitTestNode2)
+            self.assertEqual(test_inst2_load.graph_is_a,  utest.UnitTestNode2)
+
+    def test_43(self):
+        # test casting subclass using self.graph_is_a
+        with utest:
+            test_inst2 = UnitTestNode2(keep_db_in_synch = True)
+            test_inst2.list_of_strs = 'abc'
+            test_inst2.list_of_strs = 'dfe'
+            test_inst2.list_of_strs = 'ghi'
+            test_inst2.one_str = 'abc'
+            test_inst2.one_int = 9999
+            test_inst2.list_of_ints_level2 = 88991010
+            test_inst2.list_of_ints_level2 = 111112121313
+            test_inst2.list_of_ints_level2 = 141415151616
+
+            inst_id = test_inst2.inst_id
+            test_inst2_load = UnitTestNode1.find(inst_id=inst_id)
+            self.assertEqual(test_inst2_load.__class__,  utest.UnitTestNode1)
+            self.assertEqual(test_inst2_load.graph_is_a,  utest.UnitTestNode2)
+
+            test_inst2_load.cast_to_graph_type()
+            self.assertEqual(test_inst2_load.graph_is_a,  utest.UnitTestNode2)
+            self.assertEqual(test_inst2_load.__class__,  utest.UnitTestNode2)
 
 if __name__ == '__main__':
     unittest.main(exit=False)

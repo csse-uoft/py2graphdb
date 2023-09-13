@@ -3,7 +3,7 @@ import re
 @classmethod
 def search(cls, props={}, how='first', subclass=False):
     insts = SPARQLDict._search(klass=cls.klass, props=props, how=how, subclass=subclass)
-    return [eval(f"{resolve_nm_for_dict(inst['is_a'])}.load_from_inst(inst=inst)") for inst in insts]
+    return [eval(f"{resolve_nm_for_dict(inst['is_a'])}(inst=inst)") for inst in insts]
 
 
 def save(self):
@@ -16,12 +16,6 @@ def save(self):
 
 def delete(self):
     SPARQLDict._delete(inst_id=self.inst_id)
-
-@classmethod
-def load_from_inst(cls, inst):
-    tmp = cls()
-    tmp.load(inst=inst)
-    return tmp
 
 def load(self, inst=None):
     if inst is not None and inst.get('ID'):

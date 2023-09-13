@@ -243,7 +243,7 @@ class TestUnitTestNode(unittest.TestCase):
 
     def test_25(self):
         with utest:
-            # test load_from_inst
+            # test Constructor from SPARQLDict object, inst
             inst_id = f"utest.{int(np.random.rand()*10**10)}"
             test_inst10 = UnitTestNode2(inst_id=inst_id)
             test_inst10.keep_db_in_synch = True
@@ -255,7 +255,7 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertEqual(test_inst10.one_str, 'my name')
 
             test_inst10_dict = SPARQLDict._get(klass='utest.UnitTestNode2', inst_id=inst_id)
-            test_inst10_obj = UnitTestNode2.load_from_inst(inst=test_inst10_dict)
+            test_inst10_obj = UnitTestNode2(inst=test_inst10_dict)
             self.assertEqual(test_inst10_obj.inst_id, inst_id)
             self.assertEqual(test_inst10_obj.one_int, 11987654)
             self.assertEqual(test_inst10.one_float, 0.987456)
@@ -323,6 +323,7 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertIn(test_inst10.inst_id, [inst['ID'] for inst in insts])
             
     def test_30(self):
+        # test search results on Constructor from SPARQLDict object
         with utest:
             rr1 = int(np.random.rand()*10**10)
             rr2 = int(np.random.rand()*10**10)
@@ -344,7 +345,7 @@ class TestUnitTestNode(unittest.TestCase):
             nodes = UnitTestNode2.search(how='all')
             self.assertEqual(len(insts), len(nodes))
 
-            node = UnitTestNode2.load_from_inst(inst=insts[-1])
+            node = UnitTestNode2(inst=insts[-1])
             self.assertEqual(node.inst_id, insts[-1]['ID'])
             self.assertEqual([node.one_int], insts[-1][utest.hasOneInt])
             self.assertEqual(len(set(node.list_of_ints) & set(insts[-1][utest.hasListOfInts])), 3)

@@ -24,12 +24,12 @@ class GraphNode(Thing):
     created_at = None
     keep_db_in_synch = False
     graph_is_a = None
-    def __init__(self, inst_id=None, keep_db_in_synch=False) -> None:
+    def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
         created_at = datetime.now()
         super().__init__()
         self.keep_db_in_synch = keep_db_in_synch
         if inst_id: self.inst_id = resolve_nm_for_dict(str(inst_id))
-        self.load()
+        self.load(inst=inst)
         if not self.inst_id: self.inst_id = get_instance_label(klass = self.klass)
         
     @property
@@ -102,7 +102,7 @@ class GraphNode(Thing):
         """
         inst = SPARQLDict._get(inst_id=inst_id)
         if inst is not None:
-            return cls.load_from_inst(inst=inst) if inst else None
+            return cls(inst=inst) if inst else None
         else:
             return
 
@@ -114,7 +114,7 @@ class GraphNode(Thing):
         #     :return: found/generated text query
         inst = SPARQLDict._add(klass=cls.klass,inst_id=inst_id)
         if inst is not None:
-            return cls.load_from_inst(inst=inst) if inst else None
+            return cls(inst=inst) if inst else None
         else:
             return
 

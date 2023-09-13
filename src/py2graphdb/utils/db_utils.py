@@ -942,21 +942,21 @@ class SPARQLDict():
     # ask if any parents with pred
     # find children with pred
     @classmethod
-    def _path_distance(cls, start, end, preds=[], direction='children', how='first'):
+    def _path_distance(cls, start, end=None, preds=[], direction='children', how='first'):
         return cls._process_path_request(start=start, action='distance', end=end, preds=preds, direction=direction, how=how)
 
     @classmethod
-    def _path_exists(cls, start, end, preds=[], direction='children', how='first'):
+    def _path_exists(cls, start, end=None, preds=[], direction='children', how='first'):
         return cls._process_path_request(start=start, action='ask', end=end, preds=preds, direction=direction, how=how)
 
     @classmethod
-    def _children(cls, start, end, preds=[], action='collect', how='first'):
+    def _children(cls, start, end=None, preds=[], action='collect', how='first'):
         return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction='children', how=how)
     @classmethod
-    def _parents(cls, start, end, preds=[], action='collect', how='first'):
+    def _parents(cls, start, end=None, preds=[], action='collect', how='first'):
         return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction='parents', how=how)
     @classmethod
-    def _path_collect(cls, start, end, preds=[], action='collect', direction='children', how='first'):
+    def _path_collect(cls, start, end=None, preds=[], action='collect', direction='children', how='first'):
         return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction=direction, how=how)
 
 

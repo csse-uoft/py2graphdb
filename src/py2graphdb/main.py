@@ -45,8 +45,8 @@ class SampleNode(GraphNode):
         'one_str' : {'pred':utest.hasOneStr, 'cardinality':'one'},
     }
 
-    def __init__(self, inst_id=None, keep_db_in_synch=False) -> None:
-        super().__init__(inst_id=inst_id, keep_db_in_synch=keep_db_in_synch)
+    def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
+        super().__init__(inst_id=inst_id, inst=inst, keep_db_in_synch=keep_db_in_synch)
 
         
     imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()

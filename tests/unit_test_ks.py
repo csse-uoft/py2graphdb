@@ -80,8 +80,8 @@ class UnitTestNode1(GraphNode):
         'one_uri' : {'pred':utest.hasOneURI, 'cardinality':'one'},
     }
 
-    def __init__(self, inst_id=None, keep_db_in_synch=False) -> None:
-        super().__init__(inst_id=inst_id, keep_db_in_synch=keep_db_in_synch)
+    def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
+        super().__init__(inst_id=inst_id, inst=inst, keep_db_in_synch=keep_db_in_synch)
 
         
     # from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
@@ -116,8 +116,8 @@ class UnitTestNode2(UnitTestNode1):
     }
     relations = {**klass_relations, **super_relations}
 
-    def __init__(self, inst_id=None, keep_db_in_synch=False) -> None:
-        super().__init__(inst_id=inst_id, keep_db_in_synch=keep_db_in_synch)
+    def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
+        super().__init__(inst_id=inst_id, inst=inst, keep_db_in_synch=keep_db_in_synch)
 
 
     # from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing
@@ -152,8 +152,8 @@ class UnitTestNode3(UnitTestNode2):
     }
     relations = {**klass_relations, **super_relations}
 
-    def __init__(self, inst_id=None, keep_db_in_synch=False) -> None:
-        super().__init__(inst_id=inst_id, keep_db_in_synch=keep_db_in_synch)
+    def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
+        super().__init__(inst_id=inst_id, inst=inst, keep_db_in_synch=keep_db_in_synch)
 
 
     # from src.py2graphdb.utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing

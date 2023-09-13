@@ -241,7 +241,7 @@ class TestUnitTestNode(unittest.TestCase):
 
     def test_25(self):
         with utest:
-            # test load_from_inst
+            # test Constructor from SPARQLDict object, inst
             inst_id = f"utest.{int(np.random.rand()*10**10)}"
             test_inst10 = UnitTestNode1(inst_id=inst_id)
             test_inst10.keep_db_in_synch = True
@@ -257,7 +257,7 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertIn('utest.test2', test_inst10.list_of_uris)
 
             test_inst10_dict = SPARQLDict._get(klass='utest.UnitTestNode1', inst_id=inst_id)
-            test_inst10_obj = UnitTestNode1.load_from_inst(inst=test_inst10_dict)
+            test_inst10_obj = UnitTestNode1(inst=test_inst10_dict)
             self.assertEqual(test_inst10_obj.inst_id, inst_id)
             self.assertEqual(test_inst10_obj.one_int, 11987654)
             self.assertEqual(test_inst10.one_float, 0.987456)
@@ -348,7 +348,7 @@ class TestUnitTestNode(unittest.TestCase):
             nodes = UnitTestNode1.search(how='all')
             self.assertEqual(len(insts), len(nodes))
 
-            node = UnitTestNode1.load_from_inst(inst=insts[-1])
+            node = UnitTestNode1(inst=insts[-1])
             self.assertEqual(node.inst_id, insts[-1]['ID'])
             self.assertEqual([node.one_int], insts[-1][utest.hasOneInt])
             self.assertEqual(len(set(node.list_of_ints) & set(insts[-1][utest.hasListOfInts])), 3)

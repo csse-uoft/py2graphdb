@@ -42,7 +42,9 @@ def load(self, inst=None):
             kind = pred.range[0]
             values = inst[pred] if pred in inst.keys() else []
 
-            if kind != self.Thing:
+            if kind==bool:    
+                values = ['true' == re.sub(f'^{CONFIG.PREFIX}:','',str(value)).lower() for value in values]
+            elif kind != self.Thing:
                 values = [eval(f"{kind.__name__}(re.sub(f'^{CONFIG.PREFIX}:','',str(value)))") for value in values]
             try:
                 if cardinality!='many':
@@ -75,6 +77,7 @@ for val,props in relations.items():
     kind = pred.range[0]
     kind_str = Thing if isinstance(kind,str) else kind.__name__
     value = 'value'
+
     if kind==bool:    value = f"{kind_str}('true' == re.sub(f'^{CONFIG.PREFIX}:','',str(value)).lower())"
     elif kind!=Thing:    value = f"{kind_str}(re.sub(f'^{CONFIG.PREFIX}:','',str(value)))"
     else:               value = 'resolve_nm_for_dict(value)'

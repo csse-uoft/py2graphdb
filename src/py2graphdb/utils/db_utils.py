@@ -8,19 +8,13 @@ from copy import copy
 import warnings
 
 from owlready2 import default_world, onto_path, DataProperty, rdfs, Thing, ThingClass
-from owlready2.prop import PropertyClass
+from owlready2.prop import PropertyClass, ObjectPropertyClass
 from ..ontology.operators import *
 
 onto_path.append('input/ontology_cache/')
 exec(f"{CONFIG.PREFIX} = default_world.get_namespace(\"{CONFIG.NM}\")")
 
 rdf_nm =  default_world.get_namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
-
-# from owlready2 import ObjectProperty, DataProperty, rdfs, Thing
-
-
-
-# from ..ontology.extra import *
 
 from ..utils.misc_lib import *
 import collections
@@ -557,7 +551,6 @@ def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s', stype_labe
     generates variable names for Operator-wrapped properties.
         call row_to_sparql_filters() to get fitlers aligned with tutrle output
     """
-
     found_properties = False
     if inst.get('ID'):
         s = resolve_nm_for_ttl(inst['ID'])
@@ -589,8 +582,16 @@ def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s', stype_labe
                 continue
             prop2 = str(prop).replace(':','.')
             prop2 = re.sub('^\.', f'{CONFIG.PREFIX}.', prop2)
-            if isinstance(prop2, str):   prop_eval = eval(prop2)
-            else:                       prop_eval = prop2
+
+            if isinstance(prop, ObjectPropertyClass):   
+                prop_eval = prop
+                prop_str = f"<{prop.namespace.base_iri}{prop.name}>"
+            elif isinstance(prop2, str):
+                prop_eval = eval(prop2)
+                prop_str = resolve_nm_for_ttl(prop)
+            else:                                       
+                prop_eval = prop2
+                prop_str = resolve_nm_for_ttl(prop)
             # if str in ranges:       o = '"'+str(val).replace('\\', '\\\\').replace('"','\\"') + '"'
             if prop_eval is None:            o = resolve_nm_for_ttl(val)
             elif str in prop_eval.range:     o = Literal(str(val)).n3()
@@ -599,7 +600,6 @@ def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s', stype_labe
             elif bool in prop_eval.range:   o = Literal(bool(val)).n3()
             elif len(prop_eval.range)>0 and prop_eval.range[0] != Thing :     o = Literal(str(val)).n3()+f"^^{prop_eval.range[0]}"
             else:                            o = resolve_nm_for_ttl(val)
-            prop_str = resolve_nm_for_ttl(prop)
 
             if isinstance(op, Operator):
                 text += f"    {prop_str} ?var_{prop_i};\n"
@@ -638,8 +638,16 @@ def row_to_sparql_filters(inst, s_label='s'):
 
             if val is None:
                 continue
-            if isinstance(prop2, str):   prop_eval = eval(prop2)
-            else:                       prop_eval = prop2
+            if isinstance(prop, ObjectPropertyClass):   
+                prop_eval = prop
+            elif isinstance(prop2, str):
+                prop_eval = eval(prop2)
+            else:                                       
+                prop_eval = prop2
+            # if isinstance(prop, ObjectPropertyClass):   
+            #     prop_eval = prop
+            # elif isinstance(prop2, str):   prop_eval = eval(prop2)
+            # else:                       prop_eval = prop2
             # if str in ranges:       o = '"'+str(val).replace('\\', '\\\\').replace('"','\\"') + '"'
             if prop_eval is None:            o = resolve_nm_for_ttl(val)
             elif str in prop_eval.range:     o = Literal(str(val)).n3()
@@ -1098,6 +1106,8 @@ class SPARQLDict():
             tmp = [t for t in tmp if len(t['path'])==0]
             if how=='first'     : return tmp[0] if len(tmp)>0 else None
             else                : return tmp
+
+
     @classmethod
     def _parse_distance_list(cls, result):
         path = []

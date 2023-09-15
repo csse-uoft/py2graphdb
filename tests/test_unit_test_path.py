@@ -113,7 +113,7 @@ class TestUnitTestPathConfig1(unittest.TestCase):
             res = SPARQLDict._process_path_request(start, end, action='collect', direction='children', how='first')
             self.assertEqual( res ,  {'end': 'utest.n9', 'path': ['utest.n5', 'utest.n3'], 'start': 'utest.n1'})
 
-        with utest:   
+        with utest:
             start = 'utest.n1'
             end = 'utest.n9'
             res = SPARQLDict._process_path_request(start, end, action='collect', direction='children', how='shortest')

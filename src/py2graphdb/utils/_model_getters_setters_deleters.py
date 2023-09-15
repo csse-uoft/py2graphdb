@@ -1,10 +1,9 @@
+from __future__ import annotations
 import re
-
 @classmethod
 def search(cls, props={}, how='first', subclass=False):
     insts = SPARQLDict._search(klass=cls.klass, props=props, how=how, subclass=subclass)
-    return [eval(f"{resolve_nm_for_dict(inst['is_a'])}(inst=inst)") for inst in insts]
-
+    return [cls(inst=inst).cast_to_graph_type() for inst in insts]
 
 def save(self):
     for val,props in self.relations.items():
@@ -65,6 +64,7 @@ def load(self, inst=None):
                     exec(f"self._{val} = []")
             except AttributeError:
                 pass
+
     if inst is not None: self.graph_is_a = inst.get('is_a')
 
 
@@ -75,7 +75,8 @@ for val,props in relations.items():
     kind = pred.range[0]
     kind_str = Thing if isinstance(kind,str) else kind.__name__
     value = 'value'
-    if kind!=Thing:    value = f"{kind_str}(re.sub(f'^{CONFIG.PREFIX}:','',str(value)))"
+    if kind==bool:    value = f"{kind_str}('true' == re.sub(f'^{CONFIG.PREFIX}:','',str(value)).lower())"
+    elif kind!=Thing:    value = f"{kind_str}(re.sub(f'^{CONFIG.PREFIX}:','',str(value)))"
     else:               value = 'resolve_nm_for_dict(value)'
     set_code = ".append(value)" if cardinality=='many' else " = value"
     code = f"""

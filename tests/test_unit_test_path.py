@@ -22,7 +22,6 @@ with utest:
     print()
 
 
-
 def build_test_nodes(n):
     return [UnitTestNode1(inst_id=f'utest.n{i}', keep_db_in_synch = True) for i in range(1,n+1)]
 

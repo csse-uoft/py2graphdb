@@ -91,7 +91,9 @@ class GraphNode(Thing):
 
     def cast_to_graph_type(self):
         if self.graph_is_a:
-            self.graph_is_a(self)
+            return self.graph_is_a(self)
+        else:
+            return self
 
 
     @classmethod

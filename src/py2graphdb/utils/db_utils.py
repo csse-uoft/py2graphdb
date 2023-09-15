@@ -20,7 +20,7 @@ rdf_nm =  default_world.get_namespace("http://www.w3.org/1999/02/22-rdf-syntax-n
 
 
 
-from ..ontology.extra import *
+# from ..ontology.extra import *
 
 from ..utils.misc_lib import *
 import collections
@@ -551,7 +551,7 @@ def load_global_db(filename='global_db.pickle'):
 
 
 from rdflib import Literal,URIRef
-def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s'):
+def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s', stype_label='stype'):
     """
     convert dictionary value to Turtle format
     generates variable names for Operator-wrapped properties.
@@ -563,6 +563,8 @@ def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s'):
         s = resolve_nm_for_ttl(inst['ID'])
     else:
         s = f'?{s_label}'
+
+    stype = f"?{stype_label}"
     text = ''
     if not prop_only and inst.get('is_a'):
         if subclass:
@@ -594,6 +596,7 @@ def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s'):
             elif str in prop_eval.range:     o = Literal(str(val)).n3()
             elif int in prop_eval.range:     o = Literal(int(val)).n3()
             elif float in prop_eval.range:   o = Literal(float(val)).n3()
+            elif bool in prop_eval.range:   o = Literal(bool(val)).n3()
             elif len(prop_eval.range)>0 and prop_eval.range[0] != Thing :     o = Literal(str(val)).n3()+f"^^{prop_eval.range[0]}"
             else:                            o = resolve_nm_for_ttl(val)
             prop_str = resolve_nm_for_ttl(prop)
@@ -605,6 +608,11 @@ def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s'):
 
             found_properties = True
     text += ".\n"
+    if subclass:
+        if inst.get('is_a'):
+            text += f"FILTER EXISTS {{{stype} <http://www.w3.org/2000/01/rdf-schema#subClassOf> {resolve_nm_for_ttl(inst['is_a'])}}}.\n"
+        else:
+            warnings.warn("Subclass was requested by no is_a was provided. Ignoring subclass", category=RuntimeWarning)
     return text if found_properties else None
 
 def row_to_sparql_filters(inst, s_label='s'):
@@ -637,6 +645,7 @@ def row_to_sparql_filters(inst, s_label='s'):
             elif str in prop_eval.range:     o = Literal(str(val)).n3()
             elif int in prop_eval.range:     o = Literal(int(val)).n3()
             elif float in prop_eval.range:   o = Literal(float(val)).n3()
+            elif bool in prop_eval.range:    o = Literal(bool(val)).n3()
             elif len(prop_eval.range)>0 and prop_eval.range[0] != Thing :     o = Literal(str(val)).n3()+f"^^{prop_eval.range[0]}"
             else:                            o = resolve_nm_for_ttl(val)
             filter_vals.append(o)
@@ -963,7 +972,7 @@ class SPARQLDict():
     @classmethod
     def _build_node_query(cls, param, val):
         _query = ''
-        if isinstance(param, str):
+        if isinstance(param, str) or issubclass(type(param), Thing):
             _query = f"BIND({resolve_nm_for_ttl(str(param))} as ?{val})."
         elif isinstance(param, dict):
             _query = ttl_query = row_to_turtle(param, subclass=True, s_label=val)
@@ -991,11 +1000,11 @@ class SPARQLDict():
     #        list (strings)  = many inst_ids
     #        list (Data/ObjectProperty)  = many predicates
     #        dict   = inst object
-    def _process_path_request(cls, start, end, action='collect', preds=[], direction='children', how='first'):
-
+    def _process_path_request(cls, start, end, action='collect', preds=[], direction='children', how='first'):        
         start_query = SPARQLDict._build_node_query(param=start, val='start')
         if start_query == '':
             raise(ValueError("start condition can't be empty."))
+
         end_query = SPARQLDict._build_node_query(param=end, val='end')
         if end_query == '':
             warnings.warn("end condition is empty and will search the entire graph.", category=RuntimeWarning)
@@ -1174,6 +1183,7 @@ class SPARQLDict():
                 elif str in prop_eval.range:     o = str(val)
                 elif int in prop_eval.range:     o = int(val)
                 elif float in prop_eval.range:   o = float(val)
+                elif bool in prop_eval.range:    o = val == 'true'
                 elif len(prop_eval.range)>0:     o = str(val)
                 else:                            o = resolve_nm_for_ttl(val)
 
@@ -1199,7 +1209,7 @@ class SPARQLDict():
             klass = props['stype']['value']
             klass = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.', klass)
             properties['is_a'] = eval(klass)
-        for prop_var,p in prop_vars.items():
+        for prop_var,prop in prop_vars.items():
             klass = None
             if prop_var not in props.keys():
                 continue
@@ -1213,13 +1223,14 @@ class SPARQLDict():
                 if val == '':
                     continue
                 try:
-                    prop_eval = eval(p.replace(':','.')) if isinstance(p,str) else p
+                    prop_eval = eval(prop.replace(':','.')) if isinstance(prop,str) else prop
                     # if prop_eval in prop_ranges.keys() and len(prop_ranges[prop_eval])>0:
                     #     ranges = prop_ranges[prop_eval]
                     if prop_eval is None:            o = resolve_nm_for_ttl(val)
                     elif str in prop_eval.range:     o = str(val)
                     elif int in prop_eval.range:     o = int(val)
                     elif float in prop_eval.range:   o = float(val)
+                    elif bool in prop_eval.range:    o = val == 'true'
                     elif Thing in prop_eval.range:   o = val
                     elif len(prop_eval.range)>0:     o = str(val)
                     else:                            o = resolve_nm_for_ttl(val)

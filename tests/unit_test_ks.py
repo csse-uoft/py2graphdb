@@ -24,6 +24,14 @@ with utest:
         rdfs.comment = ["Desc for the object"]
         range = [int]
 
+    class hasOneBool(DataProperty):
+        rdfs.comment = ["Desc for the object"]
+        range = [bool]
+
+    class hasListOfBools(DataProperty):
+        rdfs.comment = ["Desc for the object"]
+        range = [bool]
+
     class hasOneURI(ObjectProperty):
         rdfs.comment = ["Desc for the object"]
         range = [Thing]
@@ -74,10 +82,12 @@ class UnitTestNode1(GraphNode):
         'list_of_floats' : {'pred':utest.hasListOfFloats, 'cardinality':'many'},
         'list_of_strs' : {'pred':utest.hasListOfStrs, 'cardinality':'many'},
         'list_of_uris' : {'pred':utest.hasListOfURIs, 'cardinality':'many'},
+        'list_of_bools' : {'pred':utest.hasListOfBools, 'cardinality':'many'},
         'one_int' : {'pred':utest.hasOneInt, 'cardinality':'one'},
         'one_float' : {'pred':utest.hasOneFloat, 'cardinality':'one'},
         'one_str' : {'pred':utest.hasOneStr, 'cardinality':'one'},
         'one_uri' : {'pred':utest.hasOneURI, 'cardinality':'one'},
+        'one_bool' : {'pred':utest.hasOneBool, 'cardinality':'one'},
     }
 
     def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:

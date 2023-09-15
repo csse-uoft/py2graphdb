@@ -33,6 +33,14 @@ with utest:
         rdfs.comment = ["Int for the object"]
         range = [int]
 
+    class hasbool(DataProperty):
+        rdfs.comment = ["Boolean for the object"]
+        range = [bool]
+
+    class hasfloat(DataProperty):
+        rdfs.comment = ["Float for the object"]
+        range = [float]
+
     class hasUUID(DataProperty):
         rdfs.comment = ["UUID for the object, if applicable"]
         range = [str]
@@ -160,6 +168,138 @@ class TestSPARQLDict(unittest.TestCase):
             self.assertEqual(inst_updated[utest.title], ['my title 2'])
             self.assertNotIn(utest.desc, inst_updated.keys())
 
+    def test_12_bool1(self):
+        with utest:
+            rr1 = str(int(np.random.rand()*10**10))
+            props = {utest.title:['my new title 1', 'my title 2'], utest.desc:[f"My desc with {rr1}"], utest.hasbool:[True]}
+            rr2 = str(int(np.random.rand()*10**10))
+            inst_id = rr2
+            inst_add = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id, props=props)
+            inst_id = f"utest.{rr2}"
+            inst_updated = SPARQLDict._update(klass=utest.TestThing,inst_id=inst_id, drop={utest.hasbool:True}, add={utest.hasbool:False})
+            inst_get = SPARQLDict._get(klass=utest.TestThing,inst_id=inst_id)
+            self.assertEqual(inst_updated[utest.hasbool], [False])
+            self.assertEqual(inst_get[utest.hasbool], [False])
+
+    def test_12_bool2(self):
+        with utest:
+            rr1 = str(int(np.random.rand()*10**10))
+            props = {utest.title:['my new title 1', 'my title 2'], utest.desc:[f"My desc with {rr1}"], utest.hasbool:[True]}
+            rr2 = str(int(np.random.rand()*10**10))
+            inst_id = rr2
+            inst_add = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id, props=props)
+            inst_id = f"utest.{rr2}"
+            inst_updated = SPARQLDict._update(klass=utest.TestThing,inst_id=inst_id, add={utest.hasbool:False})
+            inst_get = SPARQLDict._get(klass=utest.TestThing,inst_id=inst_id)
+            self.assertIn(True, inst_updated[utest.hasbool])
+            self.assertIn(False, inst_updated[utest.hasbool])
+            self.assertEqual(len(inst_updated[utest.hasbool]), 2)
+            self.assertIn(True, inst_get[utest.hasbool])
+            self.assertIn(False, inst_get[utest.hasbool])
+            self.assertEqual(len(inst_get[utest.hasbool]), 2)
+
+
+    def test_12_bool3(self):
+        with utest:
+            rr1 = str(int(np.random.rand()*10**10))
+            props = {utest.title:['my new title 1', 'my title 2'], utest.desc:[f"My desc with {rr1}"], utest.hasbool:[True]}
+            rr2 = str(int(np.random.rand()*10**10))
+            inst_id = rr2
+            inst_add = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id, props=props)
+            inst_id = f"utest.{rr2}"
+            inst_updated = SPARQLDict._update(klass=utest.TestThing,inst_id=inst_id, new={utest.hasbool:False})
+            inst_get = SPARQLDict._get(klass=utest.TestThing,inst_id=inst_id)
+            self.assertEqual(inst_updated[utest.hasbool], [False])
+            self.assertEqual(inst_get[utest.hasbool], [False])
+
+    def test_12_int1(self):
+        with utest:
+            rr1 = str(int(np.random.rand()*10**10))
+            props = {utest.title:['my new title 1', 'my title 2'], utest.desc:[f"My desc with {rr1}"], utest.hasint:[123]}
+            rr2 = str(int(np.random.rand()*10**10))
+            inst_id = rr2
+            inst_add = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id, props=props)
+            inst_id = f"utest.{rr2}"
+            inst_updated = SPARQLDict._update(klass=utest.TestThing,inst_id=inst_id, drop={utest.hasint:123}, add={utest.hasint:456})
+            inst_get = SPARQLDict._get(klass=utest.TestThing,inst_id=inst_id)
+            self.assertEqual(inst_updated[utest.hasint], [456])
+            self.assertEqual(inst_get[utest.hasint], [456])
+
+    def test_12_int2(self):
+        with utest:
+            rr1 = str(int(np.random.rand()*10**10))
+            props = {utest.title:['my new title 1', 'my title 2'], utest.desc:[f"My desc with {rr1}"], utest.hasint:[123]}
+            rr2 = str(int(np.random.rand()*10**10))
+            inst_id = rr2
+            inst_add = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id, props=props)
+            inst_id = f"utest.{rr2}"
+            inst_updated = SPARQLDict._update(klass=utest.TestThing,inst_id=inst_id, add={utest.hasint:456})
+            inst_get = SPARQLDict._get(klass=utest.TestThing,inst_id=inst_id)
+            self.assertIn(123, inst_updated[utest.hasint])
+            self.assertIn(456, inst_updated[utest.hasint])
+            self.assertEqual(len(inst_updated[utest.hasint]), 2)
+            self.assertIn(123, inst_get[utest.hasint])
+            self.assertIn(456, inst_get[utest.hasint])
+            self.assertEqual(len(inst_get[utest.hasint]), 2)
+
+    def test_12_int3(self):
+        with utest:
+            rr1 = str(int(np.random.rand()*10**10))
+            props = {utest.title:['my new title 1', 'my title 2'], utest.desc:[f"My desc with {rr1}"], utest.hasint:[123, 456]}
+            rr2 = str(int(np.random.rand()*10**10))
+            inst_id = rr2
+            inst_add = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id, props=props)
+            inst_id = f"utest.{rr2}"
+            inst_updated = SPARQLDict._update(klass=utest.TestThing,inst_id=inst_id, new={utest.hasint:789})
+            inst_get = SPARQLDict._get(klass=utest.TestThing,inst_id=inst_id)
+            self.assertEqual(inst_updated[utest.hasint], [789])
+            self.assertEqual(inst_get[utest.hasint], [789])
+
+
+    def test_12_float1(self):
+        with utest:
+            rr1 = str(int(np.random.rand()*10**10))
+            props = {utest.title:['my new title 1', 'my title 2'], utest.desc:[f"My desc with {rr1}"], utest.hasfloat:[0.123]}
+            rr2 = str(int(np.random.rand()*10**10))
+            inst_id = rr2
+            inst_add = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id, props=props)
+            inst_id = f"utest.{rr2}"
+            inst_updated = SPARQLDict._update(klass=utest.TestThing,inst_id=inst_id, drop={utest.hasfloat:0.123}, add={utest.hasfloat:0.456})
+            inst_get = SPARQLDict._get(klass=utest.TestThing,inst_id=inst_id)
+            self.assertEqual(inst_updated[utest.hasfloat], [0.456])
+            self.assertEqual(inst_get[utest.hasfloat], [0.456])
+
+    def test_12_float2(self):
+        with utest:
+            rr1 = str(int(np.random.rand()*10**10))
+            props = {utest.title:['my new title 1', 'my title 2'], utest.desc:[f"My desc with {rr1}"], utest.hasfloat:[0.123]}
+            rr2 = str(int(np.random.rand()*10**10))
+            inst_id = rr2
+            inst_add = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id, props=props)
+            inst_id = f"utest.{rr2}"
+            inst_updated = SPARQLDict._update(klass=utest.TestThing,inst_id=inst_id, add={utest.hasfloat:0.456})
+            inst_get = SPARQLDict._get(klass=utest.TestThing,inst_id=inst_id)
+            self.assertIn(0.123, inst_updated[utest.hasfloat])
+            self.assertIn(0.456, inst_updated[utest.hasfloat])
+            self.assertEqual(len(inst_updated[utest.hasfloat]), 2)
+            self.assertIn(0.123, inst_get[utest.hasfloat])
+            self.assertIn(0.456, inst_get[utest.hasfloat])
+            self.assertEqual(len(inst_get[utest.hasfloat]), 2)
+
+    def test_12_float3(self):
+        with utest:
+            rr1 = str(int(np.random.rand()*10**10))
+            props = {utest.title:['my new title 1', 'my title 2'], utest.desc:[f"My desc with {rr1}"], utest.hasfloat:[0.123]}
+            rr2 = str(int(np.random.rand()*10**10))
+            inst_id = rr2
+            inst_add = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id, props=props)
+            inst_id = f"utest.{rr2}"
+            inst_updated = SPARQLDict._update(klass=utest.TestThing,inst_id=inst_id, new={utest.hasfloat:0.456})
+            inst_get = SPARQLDict._get(klass=utest.TestThing,inst_id=inst_id)
+            self.assertEqual(inst_updated[utest.hasfloat], [0.456])
+            self.assertEqual(inst_get[utest.hasfloat], [0.456])
+
+
     def test_13(self):
         with utest:
             rr1 = str(int(np.random.rand()*10**10))
@@ -244,7 +384,7 @@ class TestSPARQLDict(unittest.TestCase):
             self.assertIn("A NEW desc #2" in inst2[utest.desc] and f"this is my NEW trace ({rr}).", inst2[utest.desc])
             self.assertEqual(len(inst2[utest.desc]), 2)
 
-    def test_20(self):
+    def test_19(self):
         # test _get() without klass, only inst_id
         with utest:
             rr = np.random.rand()
@@ -260,7 +400,7 @@ class TestSPARQLDict(unittest.TestCase):
             self.assertEqual(inst2[utest.desc], [f"this is my trace ({rr})."])
             self.assertEqual(inst['is_a'], utest.TestThing)
 
-    def test_21(self):
+    def test_20(self):
         # test _update() without klass, only inst_id and new properties
         with utest:
             rr = np.random.rand()
@@ -281,99 +421,206 @@ class TestSPARQLDict(unittest.TestCase):
             self.assertEqual(len(inst2[utest.desc]), 2)
 
 
+    def test_32(self):
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasint:1})
+            inst_id1 = inst['ID']
 
-    def test_30(self):
+            inst = SPARQLDict._get(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasint:1})
+            inst_id2 = inst['ID']
+            self.assertEqual(inst_id1, inst_id2)
+
+    def test_33(self):
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasint:11})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._get(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasint:12})
+            self.assertIsNone(inst)
+
+    def test_34(self):
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasfloat:rr})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._get(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasfloat:rr})
+            inst_id2 = inst['ID']
+            self.assertEqual(inst_id1, inst_id2)
+
+    def test_35(self):
+        with utest:
+            rr0 = np.random.rand()
+            rr1 = np.random.rand()
+            rr2 = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr0}).", utest.hasfloat:rr1})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._get(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr0}).", utest.hasfloat:rr2})
+            self.assertIsNone(inst)
+
+
+    def test_36(self):
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:False})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._get(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:False})
+            inst_id2 = inst['ID']
+            self.assertEqual(inst_id1, inst_id2)
+
+    def test_37(self):
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:True})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._get(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:True})
+            inst_id2 = inst['ID']
+            self.assertEqual(inst_id1, inst_id2)
+
+
+    def test_36(self):
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:True})
+            inst_id1 = inst['ID']
+            self.assertEqual(len(inst[utest.hasbool]), 1)
+            self.assertIn(True,inst[utest.hasbool])
+
+    def test_37(self):
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:False})
+            self.assertEqual(len(inst[utest.hasbool]), 1)
+            self.assertIn(False,inst[utest.hasbool])
+
+    def test_38(self):
+        with utest:
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.hasbool:False})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.hasbool:False})
+            inst_id2 = inst['ID']
+            self.assertNotEqual(inst_id1, inst_id2)
+
+    def test_39(self):
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:False})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:False})
+            inst_id2 = inst['ID']
+            self.assertNotEqual(inst_id1, inst_id2)
+
+    def test_50(self):
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:True})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:True})
+            inst_id2 = inst['ID']
+            self.assertNotEqual(inst_id1, inst_id2)
+
+
+
+    def test_51(self):
         with utest:
             # mimic resolve_nm_for_ttl
             res = _resolve_nm(utest.TestThing, from_delimiter='.', to_delimiter=':')
             self.assertEqual(res, 'utest:TestThing')
 
-    def test_31(self):
+    def test_52(self):
         with utest:
             # mimic resolve_nm_for_ttl
             res = _resolve_nm('.TestThing', from_delimiter='.', to_delimiter=':')
             self.assertEqual(res, 'utest:TestThing')
 
-    def test_32(self):
+    def test_53(self):
         with utest:
             # mimic resolve_nm_for_ttl
             res = _resolve_nm('utest:TestThing', from_delimiter='.', to_delimiter=':')
             self.assertEqual(res, 'utest:TestThing')
 
-    def test_33(self):
+    def test_54(self):
         with utest:
             # mimic resolve_nm_for_ttl
             res = _resolve_nm(':TestThing', from_delimiter='.', to_delimiter=':')
             self.assertEqual(res, 'utest:TestThing')
 
-    def test_40(self):
+    def test_60(self):
         with utest:
             # mimic resolve_nm_for_dict
             res = _resolve_nm(utest.TestThing, from_delimiter=':', to_delimiter='.')
             self.assertEqual(res, 'utest.TestThing')
 
-    def test_41(self):
+    def test_61(self):
         with utest:
             # mimic resolve_nm_for_dict
             res = _resolve_nm('.TestThing', from_delimiter=':', to_delimiter='.')
             self.assertEqual(res, 'utest.TestThing')
 
-    def test_42(self):
+    def test_62(self):
         with utest:
             # mimic resolve_nm_for_dict
             res = _resolve_nm('utest:TestThing', from_delimiter=':', to_delimiter='.')
             self.assertEqual(res, 'utest.TestThing')
 
-    def test_43(self):
+    def test_63(self):
         with utest:
             # mimic resolve_nm_for_dict
             res = _resolve_nm(':TestThing', from_delimiter=':', to_delimiter='.')
             self.assertEqual(res, 'utest.TestThing')
 
 
-    def test_50(self):
+    def test_70(self):
         # resolve_nm_for_ttl
         with utest:
             res = resolve_nm_for_ttl(utest.TestThing)
             self.assertEqual(res, 'utest:TestThing')
 
-    def test_51(self):
+    def test_71(self):
         # resolve_nm_for_ttl
         with utest:
             res = resolve_nm_for_ttl('.TestThing')
             self.assertEqual(res, 'utest:TestThing')
 
-    def test_52(self):
+    def test_72(self):
         # resolve_nm_for_ttl
         with utest:
             res = resolve_nm_for_ttl('utest:TestThing')
             self.assertEqual(res, 'utest:TestThing')
 
-    def test_53(self):
+    def test_73(self):
         # resolve_nm_for_ttl
         with utest:
             res = resolve_nm_for_ttl(':TestThing')
             self.assertEqual(res, 'utest:TestThing')
 
-    def test_60(self):
+    def test_80(self):
         # resolve_nm_for_dict
         with utest:
             res = resolve_nm_for_dict(utest.TestThing)
             self.assertEqual(res, 'utest.TestThing')
 
-    def test_61(self):
+    def test_81(self):
         # resolve_nm_for_dict
         with utest:
             res = resolve_nm_for_dict('.TestThing')
             self.assertEqual(res, 'utest.TestThing')
 
-    def test_62(self):
+    def test_82(self):
         # resolve_nm_for_dict
         with utest:
             res = resolve_nm_for_dict('utest:TestThing')
             self.assertEqual(res, 'utest.TestThing')
 
-    def test_63(self):
+    def test_83(self):
         # resolve_nm_for_dict
         with utest:
             res = resolve_nm_for_dict(':TestThing')

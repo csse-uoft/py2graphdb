@@ -74,14 +74,13 @@ class TestUnitTestNode(unittest.TestCase):
 
     def test_6(self):
         with utest:
-            # test GraphNode.inst_id setting with invlaiud namespace
+            # test GraphNode.inst_id setting with invalid namespace
             rr = f"any_namespace:{int(np.random.rand()*10**10)}"
             with self.assertRaises(ValueError):
                 UnitTestNode1(inst_id=rr)
 
     def test_7(self):
         with utest:
-            # test GraphNode.find_generate on existing
             test_inst0 = UnitTestNode1()
             test_inst0.list_of_ints = 678
             test_inst0.list_of_ints = '456'
@@ -90,12 +89,36 @@ class TestUnitTestNode(unittest.TestCase):
 
     def test_8(self):
         with utest:
-            # test GraphNode.find_generate on existing
             test_inst0 = UnitTestNode1()
             test_inst0.list_of_floats = 0.678
             test_inst0.list_of_floats = '0.456'
             self.assertEqual(test_inst0._list_of_floats, [0.678, 0.456])
 
+
+    def test_8_bool1(self):
+        with utest:
+            test_inst0 = UnitTestNode1()
+            test_inst0.list_of_bools = False
+            test_inst0.list_of_bools = True
+            self.assertIn(True, test_inst0._list_of_bools)
+            self.assertIn(False, test_inst0._list_of_bools)
+            self.assertEqual(len(test_inst0._list_of_bools), 2)
+
+    def test_8_bool2(self):
+        with utest:
+            test_inst0 = UnitTestNode1()
+            test_inst0.list_of_bools = True
+            test_inst0.list_of_bools = True
+            self.assertIn(True, test_inst0._list_of_bools)
+            self.assertEqual(len(test_inst0._list_of_bools), 2)
+
+    def test_8_bool3(self):
+        with utest:
+            test_inst0 = UnitTestNode1()
+            test_inst0.list_of_bools = True
+            test_inst0.list_of_bools = False
+            self.assertIn(False, test_inst0._list_of_bools)
+            self.assertEqual(len(test_inst0._list_of_bools), 2)
 
     def test_9(self):
         with utest:
@@ -104,9 +127,11 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertEqual(test_inst1.list_of_floats, [])
             self.assertEqual(test_inst1.list_of_strs, [])
             self.assertEqual(test_inst1.list_of_uris, [])
+            self.assertEqual(test_inst1.list_of_bools, [])
             self.assertEqual(test_inst1.one_int, None)
             self.assertEqual(test_inst1.one_str, None)
             self.assertEqual(test_inst1.one_uri, None)
+            self.assertEqual(test_inst1.one_bool, None)
 
     def test_10(self):
         with utest:
@@ -215,6 +240,20 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst8.one_float = 0.131415
             self.assertEqual(test_inst8.one_float, 0.131415)
 
+    def test_22_bool1(self):
+        with utest:
+            test_inst8 = UnitTestNode1()
+            test_inst8.one_bool = True
+            test_inst8.one_bool = False
+            self.assertEqual(test_inst8.one_bool, False)
+
+    def test_22_bool2(self):
+        with utest:
+            test_inst8 = UnitTestNode1()
+            test_inst8.one_bool = False
+            test_inst8.one_bool = True
+            self.assertEqual(test_inst8.one_bool, True)
+
     def test_23(self):
         with utest:
             inst_id = f"utest.{int(np.random.rand()*10**10)}"
@@ -224,9 +263,12 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertEqual(test_inst9.list_of_floats, [])
             self.assertEqual(test_inst9.list_of_strs, [])
             self.assertEqual(test_inst9.list_of_uris, [])
+            self.assertEqual(test_inst9.list_of_bools, [])
             self.assertEqual(test_inst9.one_int, None)
+            self.assertEqual(test_inst9.one_float, None)
             self.assertEqual(test_inst9.one_str, None)
             self.assertEqual(test_inst9.one_uri, None)
+            self.assertEqual(test_inst9.one_bool, None)
 
     def test_24(self):
         with utest:
@@ -235,9 +277,11 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst10.one_int = 11987654
             test_inst10.one_float = 0.987456
             test_inst10.one_str = 'my name'
+            test_inst10.one_bool = False
             self.assertEqual(test_inst10.one_int, 11987654)
             self.assertEqual(test_inst10.one_float, 0.987456)
             self.assertEqual(test_inst10.one_str, 'my name')
+            self.assertEqual(test_inst10.one_bool, False)
 
     def test_25(self):
         with utest:
@@ -285,8 +329,22 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst2.list_of_strs = 'def 232324242525'
 
             inst = SPARQLDict._get(klass=test_inst2.klass, inst_id=test_inst2.inst_id)
-            self.assertIn('abc 778899' in inst[utest.hasListOfStrs] and 'def 232324242525', inst[utest.hasListOfStrs])
+            self.assertIn('abc 778899', inst[utest.hasListOfStrs])
+            self.assertIn('def 232324242525', inst[utest.hasListOfStrs])
             self.assertEqual(len(inst[utest.hasListOfStrs]), 2)
+
+    def test_27_bool(self):
+        with utest:
+            # test consistent update to DB with keep_db_in_synch=True
+            test_inst2 = UnitTestNode1()
+            test_inst2.keep_db_in_synch = True
+            test_inst2.list_of_bools = True
+            test_inst2.list_of_bools = False
+
+            inst = SPARQLDict._get(klass=test_inst2.klass, inst_id=test_inst2.inst_id)
+            self.assertIn(False, inst[utest.hasListOfBools])
+            self.assertIn(True, inst[utest.hasListOfBools])
+            self.assertEqual(len(inst[utest.hasListOfBools]), 2)
 
     def test_28(self):
         with utest:
@@ -593,6 +651,7 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst2.list_of_strs = 'ghi'
             test_inst2.one_str = 'abc'
             test_inst2.one_int = 9999
+            test_inst2.one_bool = True
 
             inst_id = test_inst2.inst_id
             test_inst2_load = GraphNode.find(inst_id=inst_id)
@@ -680,6 +739,64 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertIn(test_inst13.inst_id, inst_ids)
             self.assertEqual(len(insts), 2)
 
+    def test_41_bool1(self):
+        # Test Operators on GraphNodes
+        # has() on [bool]
+        with utest:
+            rr0 = np.random.rand()*10**10
+            rr1 = int(np.random.rand()*10**10)
+            rr2 = int(np.random.rand()*10**10)
+            rr3 = int(np.random.rand()*10**10)
+            rr4 = int(np.random.rand()*10**10)
+
+            inst_id10 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst10 = UnitTestNode1(inst_id=inst_id10)
+            test_inst10.keep_db_in_synch = True
+            test_inst10.one_float = rr0
+            test_inst10.one_int = 10
+            test_inst10.one_str = f'abc {rr0}'
+            test_inst10.one_bool = True
+
+
+            inst_id11 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst11 = UnitTestNode1(inst_id=inst_id11)
+            test_inst11.keep_db_in_synch = True
+            test_inst11.one_float = rr0
+            test_inst11.one_int = 11
+            test_inst11.one_str = f'abc {rr1}'
+            test_inst11.one_bool = True
+
+
+            inst_id12 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst12 = UnitTestNode1(inst_id=inst_id12)
+            test_inst12.keep_db_in_synch = True
+            test_inst12.one_float = rr0
+            test_inst12.one_int = 12
+            test_inst12.one_str = f'abc {rr2}'
+            test_inst12.one_bool = False
+
+            inst_id13 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst13 = UnitTestNode1(inst_id=inst_id13)
+            test_inst13.keep_db_in_synch = True
+            test_inst13.one_float = rr0
+            test_inst13.one_int = 13
+            test_inst13.one_str = f'abc {rr3}'
+            test_inst13.one_bool = False
+
+            inst_id14 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst14 = UnitTestNode1(inst_id=inst_id14)
+            test_inst14.keep_db_in_synch = True
+            test_inst14.one_float = rr0
+            test_inst14.one_int = 14
+            test_inst14.one_str = f'abc {rr4}'
+
+        with utest:
+            insts = UnitTestNode1.search(props={utest.hasOneFloat:rr0, has(utest.hasOneBool):[True]}, how='all')
+            inst_ids = [inst.inst_id for inst in insts]
+            self.assertIn(test_inst10.inst_id, inst_ids)
+            self.assertIn(test_inst11.inst_id, inst_ids)
+            self.assertEqual(len(insts), 2)
+
     def test_42(self):
         # Test Operators on GraphNodes
         # has() on [int] AND has() on [str]
@@ -722,6 +839,60 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertIn(test_inst13.inst_id, inst_ids)
             self.assertEqual(len(insts), 2)
 
+    def test_42_bool1(self):
+        # Test Operators on GraphNodes
+        # has() on [int] AND has() on [str] AND on [bool]
+        with utest:
+            rr0 = int(np.random.rand()*10**10)
+            rr1 = int(np.random.rand()*10**10)
+            rr2 = int(np.random.rand()*10**10)
+            rr3 = int(np.random.rand()*10**10)
+            rr4 = int(np.random.rand()*10**10)
+
+            inst_id10 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst10 = UnitTestNode1(inst_id=inst_id10)
+            test_inst10.keep_db_in_synch = True
+            test_inst10.one_int = 10
+            test_inst10.one_str = f'abc {rr0}'
+            test_inst10.one_bool = True
+
+
+            inst_id11 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst11 = UnitTestNode1(inst_id=inst_id11)
+            test_inst11.keep_db_in_synch = True
+            test_inst11.one_int = 11
+            test_inst11.one_str = f'abc {rr1}'
+            test_inst11.one_bool = True
+
+
+            inst_id12 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst12 = UnitTestNode1(inst_id=inst_id12)
+            test_inst12.keep_db_in_synch = True
+            test_inst12.one_int = 12
+            test_inst12.one_str = f'abc {rr2}'
+            test_inst12.one_bool = True
+
+            inst_id13 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst13 = UnitTestNode1(inst_id=inst_id13)
+            test_inst13.keep_db_in_synch = True
+            test_inst13.one_int = 13
+            test_inst13.one_str = f'abc {rr3}'
+            test_inst13.one_bool = False
+
+            inst_id14 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst14 = UnitTestNode1(inst_id=inst_id14)
+            test_inst14.keep_db_in_synch = True
+            test_inst14.one_int = 14
+            test_inst14.one_str = f'abc {rr4}'
+            test_inst14.one_bool = True
+
+
+            insts = UnitTestNode1.search(props={has(utest.hasOneBool):[True],has(utest.hasOneInt):[12,13,14], has(utest.hasOneStr):[f"abc {rr1}",f"abc {rr2}",f"abc {rr3}", f"abc {rr4}"]}, how='all')
+            inst_ids = [inst.inst_id for inst in insts]
+            self.assertIn(test_inst12.inst_id, inst_ids)
+            # self.assertIn(test_inst13.inst_id, inst_ids)
+            self.assertIn(test_inst14.inst_id, inst_ids)
+            self.assertEqual(len(insts), 2)
 
 
 if __name__ == '__main__':

@@ -40,6 +40,19 @@ with utest:
         rdfs.comment = ["Desc for the object"]
         range = [Thing]
 
+    class forOneURI(ObjectProperty):
+        rdfs.comment = ["Desc for the object"]
+        range = [Thing]
+        inverse_property = hasListOfURIs
+
+
+    class forListOfURIs(ObjectProperty):
+        rdfs.comment = ["Desc for the object"]
+        range = [Thing]
+        inverse_property = hasOneURI
+
+    
+
     class hasOneFloat(DataProperty):
         rdfs.comment = ["Desc for the object"]
         range = [float]

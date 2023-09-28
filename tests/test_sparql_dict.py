@@ -6,7 +6,7 @@ from src.py2graphdb.config import config as CONFIG
 
 if os.path.exists(CONFIG.LOG_FILE): os.remove(CONFIG.LOG_FILE)
 
-from owlready2 import default_world, onto_path, Thing, DataProperty
+from owlready2 import default_world, onto_path, Thing, DataProperty, ObjectProperty
 onto_path.append('input/ontology_cache/')
 
 utest = default_world.get_ontology(CONFIG.NM)
@@ -40,6 +40,16 @@ with utest:
     class hasfloat(DataProperty):
         rdfs.comment = ["Float for the object"]
         range = [float]
+
+    class hasuri(ObjectProperty):
+        rdfs.comment = ["URI for the object"]
+        range = [Thing]
+
+    class foruri(ObjectProperty):
+        rdfs.comment = ["URI for the object"]
+        range = [Thing]
+        inverse_property = hasuri
+
 
     class hasUUID(DataProperty):
         rdfs.comment = ["UUID for the object, if applicable"]
@@ -516,6 +526,64 @@ class TestSPARQLDict(unittest.TestCase):
             inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasbool:False})
             inst_id2 = inst['ID']
             self.assertNotEqual(inst_id1, inst_id2)
+
+
+    def test_40(self):
+        # search with uri property
+        with utest:
+            rr = np.random.rand()
+            rr1 = str(int(np.random.rand()*10**10))
+            inst_id1 = f"utest.{rr1}"
+            rr2 = str(int(np.random.rand()*10**10))
+            inst_id2 = f"utest.{rr2}"
+            rr3 = str(int(np.random.rand()*10**10))
+            inst_id3 = f"utest.{rr3}"
+            rr4 = str(int(np.random.rand()*10**10))
+            inst_id4 = f"utest.{rr4}"
+            rr5 = str(int(np.random.rand()*10**10))
+            inst_id5 = f"utest.{rr5}"
+            rr6 = str(int(np.random.rand()*10**10))
+            inst_id6 = f"utest.{rr6}"
+            inst1 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id1, props={utest.hasuri:inst_id6, utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst2 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id2,  props={utest.hasuri:inst_id1, utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id3,  props={utest.hasuri:inst_id1, utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id4,  props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst5 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id5,  props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst6 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id6,  props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={utest.hasuri:inst_id1, utest.desc:f"this is my trace ({rr})."}, how='all')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 2)
+            self.assertIn(inst2['ID'], inst_ids)
+            self.assertIn(inst3['ID'], inst_ids)
+
+    # def test_41(self):
+    #     # search with uri with inverse property
+    #     with utest:
+    #         rr = np.random.rand()
+    #         rr1 = str(int(np.random.rand()*10**10))
+    #         inst_id1 = f"utest.{rr1}"
+    #         rr2 = str(int(np.random.rand()*10**10))
+    #         inst_id2 = f"utest.{rr2}"
+    #         rr3 = str(int(np.random.rand()*10**10))
+    #         inst_id3 = f"utest.{rr3}"
+    #         rr4 = str(int(np.random.rand()*10**10))
+    #         inst_id4 = f"utest.{rr4}"
+    #         rr5 = str(int(np.random.rand()*10**10))
+    #         inst_id5 = f"utest.{rr5}"
+    #         rr6 = str(int(np.random.rand()*10**10))
+    #         inst_id6 = f"utest.{rr6}"
+    #         inst1 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id1, props={utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+    #         inst2 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id2,  props={utest.hasuri:inst_id1, utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+    #         inst3 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id3,  props={utest.hasuri:inst_id1, utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+    #         inst4 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id4,  props={utest.hasuri:inst_id2, utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+    #         inst5 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id5,  props={utest.hasuri:inst_id2, utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+    #         inst6 = SPARQLDict._add(klass=utest.TestThing, inst_id=inst_id6,  props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+    #         insts = SPARQLDict._search(klass=utest.TestThing, props={utest.foruri:inst_id2, utest.desc:f"this is my trace ({rr})."}, how='all')
+    #         inst_ids = [inst['ID'] for inst in insts]
+    #         self.assertEqual(len(insts), 1)
+    #         self.assertIn(inst1['ID'], inst_ids)
 
     def test_50(self):
         with utest:

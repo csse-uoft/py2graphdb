@@ -6,10 +6,12 @@ def search(cls, props={}, how='first', subclass=False):
     return [cls(inst=inst).cast_to_graph_type() for inst in insts]
 
 def save(self):
+    preds_to_update = {}
     for val,props in self.relations.items():
         pred = re.sub('^\.', f'{CONFIG.PREFIX}.', str(props['pred']))
         value = getattr(self, f'_{val}')
-        inst = SPARQLDict._update(klass=self.klass,inst_id=self.inst_id, new={pred:value})
+        preds_to_update[pred] = value
+    inst = SPARQLDict._update(klass=self.klass,inst_id=self.inst_id, new=preds_to_update)
     self.graph_is_a = inst.get('is_a')
 
 
@@ -22,7 +24,7 @@ def load(self, inst=None):
 
     if inst is None and self.inst_id is not None:
         inst = self.SPARQLDict._get(inst_id=self.inst_id)
-        if inst is None:
+        if inst is None and self.keep_db_in_synch:
             inst = self.SPARQLDict._add(klass=self.klass,inst_id=self.inst_id)
     elif inst is None and self.inst_id is None and self.keep_db_in_synch:
         inst = self.SPARQLDict._add(klass=self.klass)

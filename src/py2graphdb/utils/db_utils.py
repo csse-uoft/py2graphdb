@@ -805,6 +805,11 @@ class SPARQLDict():
     def _update(cls, klass=None, inst_id=None, drop=None, add=None, new=None):
         if inst_id is None:
             return cls._add(klass=klass, props=add or new)
+        else:
+            found = SPARQLDict._path_exists(start=inst_id, end=None, preds='rdf:type', direction='children', how='first')
+            if not found:
+                return cls._add(klass=klass, inst_id=inst_id, props=add or new)
+
         inst_id = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}:', inst_id)
         inst_id = re.sub(f'^{CONFIG.PREFIX}\.', f'{CONFIG.PREFIX}:', inst_id)
         inst = {'ID':inst_id}
@@ -922,7 +927,7 @@ class SPARQLDict():
         query_select = ' '.join([f"(GROUP_CONCAT(?{pv}_0; separator='{separator}') AS ?{pv})" for pv in prop_vars.keys()])
 
         # need to exclude graph for subclasses, if outside of this graph
-        graph_query = f"FROM <{CONFIG.GRAPH_NAME}>" if not subclass else ''
+        graph_query = ''#f"FROM <{CONFIG.GRAPH_NAME}>" if not subclass else ''
 
         where_query = ''
         if ttl_query is not None: where_query += ttl_query
@@ -935,14 +940,17 @@ class SPARQLDict():
         query = f"""
             PREFIX {CONFIG.PREFIX}: <{CONFIG.NM}>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX owl: <http://www.w3.org/2002/07/owl#>
             SELECT DISTINCT ?s ?stype {query_select}
             {graph_query}
-            WHERE {{ {where_query}   }}
+            WHERE {{ 
+                {where_query}
+                filter(?stype != owl:Thing).    # to ensure Thing is not included when infer=True
+                }}
             GROUP BY ?s ?stype
             {limit_str}
             """
-
-        result = CONFIG.client.execute_sparql(query)
+        result = CONFIG.client.execute_sparql(query, method='select', infer=False)
 
         for res in result['results']['bindings']:
             properties = SPARQLDict.sparql_to_dict(props=res, prop_vars=prop_vars, separator=separator)
@@ -1075,11 +1083,13 @@ class SPARQLDict():
                         }}
                     """
 
+        graph_query = ''# f"FROM NAMED <{CONFIG.GRAPH_NAME}>"
+
         query = f"""
             PREFIX path: <http://www.ontotext.com/path#>
             PREFIX {CONFIG.PREFIX}: <{CONFIG.NM}>
             {action_query}
-            # FROM NAMED <{CONFIG.GRAPH_NAME}>
+            {graph_query}
             WHERE {{ 
                 {start_query}
                 {end_query}
@@ -1094,7 +1104,7 @@ class SPARQLDict():
         }}    ORDER BY ?path ?index {limit_query}
         """
 
-        result = CONFIG.client.execute_sparql(query)
+        result = CONFIG.client.execute_sparql(query, method='select', infer=False)
         if action =='ask'       : return result.get('boolean')
         if action == 'distance' : return cls._parse_distance_list(result['results']['bindings'])
         if action in 'collect'  : 

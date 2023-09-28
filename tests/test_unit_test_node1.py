@@ -895,6 +895,164 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertEqual(len(insts), 2)
 
 
+    def test_43(self):
+        with utest:
+            # test Constructor from SPARQLDict object, inst
+            inst_id = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst10 = UnitTestNode1(inst_id=inst_id, keep_db_in_synch=False)
+            # test_inst10.keep_db_in_synch = True
+            test_inst10.one_int = 11987654
+            test_inst10.one_float = 0.987456
+            test_inst10.one_str = 'my name'
+            test_inst10.list_of_uris = 'utest.test1'
+            test_inst10.list_of_uris = 'utest.test2'
+            test_inst10.save()
+            self.assertEqual(test_inst10.one_int, 11987654)
+            self.assertEqual(test_inst10.one_float, 0.987456)
+            self.assertEqual(test_inst10.one_str, 'my name')
+            self.assertIn('utest.test1', test_inst10.list_of_uris)
+            self.assertIn('utest.test2', test_inst10.list_of_uris)
+
+            test_inst10_dict = SPARQLDict._get(klass='utest.UnitTestNode1', inst_id=inst_id)
+            test_inst10_obj = UnitTestNode1(inst=test_inst10_dict)
+            self.assertEqual(test_inst10_obj.inst_id, inst_id)
+            self.assertEqual(test_inst10_obj.one_int, 11987654)
+            self.assertEqual(test_inst10.one_float, 0.987456)
+            self.assertEqual(test_inst10.one_str, 'my name')
+
+    def test_43_1(self):
+        # check save() for rdf:type in graph with keep_db_in_synch=False and not properties
+        with utest:
+            node = UnitTestNode1(keep_db_in_synch=False)
+        found1 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        node.save()
+        found2 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        self.assertFalse(found1)
+        self.assertTrue(found2)
+        
+    def test_43_2(self):
+        # check save() for rdf:type in graph with keep_db_in_synch=False and properties
+        with utest:
+            node = UnitTestNode1(keep_db_in_synch=False)
+            node.one_int = 1
+        found1 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        node.save()
+        found2 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        self.assertFalse(found1)
+        self.assertTrue(found2)
+        
+    def test_43_3(self):
+        # check save() for rdf:type in graph with keep_db_in_synch=True and not properties
+        with utest:
+            node = UnitTestNode1(keep_db_in_synch=True)
+        found1 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        node.save()
+        found2 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        self.assertTrue(found1)
+        self.assertTrue(found2)
+        
+    def test_43_4(self):
+        # check save() for rdf:type in graph with keep_db_in_synch=True and properties
+        with utest:
+            node = UnitTestNode1(keep_db_in_synch=True)
+            node.one_int = 1
+        found1 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        node.save()
+        found2 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        self.assertTrue(found1)
+        self.assertTrue(found2)
+
+
+    def test_43_5(self):
+        # check save() for rdf:type in graph with keep_db_in_synch=False and not properties
+        with utest:
+            inst_id = f"utest.{int(np.random.rand()*10**10)}"
+            node = UnitTestNode1(inst_id=inst_id, keep_db_in_synch=False)
+        found1 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        node.save()
+        found2 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        self.assertFalse(found1)
+        self.assertTrue(found2)
+        
+    def test_43_6(self):
+        # check save() for rdf:type in graph with keep_db_in_synch=False and properties
+        with utest:
+            inst_id = f"utest.{int(np.random.rand()*10**10)}"
+            node = UnitTestNode1(inst_id=inst_id, keep_db_in_synch=False)
+            node.one_int = 1
+        found1 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        node.save()
+        found2 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        self.assertFalse(found1)
+        self.assertTrue(found2)
+        
+    def test_43_7(self):
+        # check save() for rdf:type in graph with keep_db_in_synch=True and not properties
+        with utest:
+            inst_id = f"utest.{int(np.random.rand()*10**10)}"
+            node = UnitTestNode1(inst_id=inst_id, keep_db_in_synch=True)
+        found1 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        node.save()
+        found2 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        self.assertTrue(found1)
+        self.assertTrue(found2)
+        
+    def test_43_8(self):
+        # check save() for rdf:type in graph with keep_db_in_synch=True and properties
+        with utest:
+            inst_id = f"utest.{int(np.random.rand()*10**10)}"
+            node = UnitTestNode1(inst_id=inst_id, keep_db_in_synch=True)
+            node.one_int = 1
+        found1 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        node.save()
+        found2 = SPARQLDict._path_exists(start=node.inst_id, end=None, preds='rdf:type', direction='children', how='first')
+        self.assertTrue(found1)
+        self.assertTrue(found2)
+
+
+    def test_50(self):
+        # Test Operators on GraphNodes
+        # has() on [int] AND has() on [str]
+        with utest:
+            rr0 = int(np.random.rand()*10**10)
+            rr1 = int(np.random.rand()*10**10)
+            rr2 = int(np.random.rand()*10**10)
+            rr3 = int(np.random.rand()*10**10)
+
+            inst_id10 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst10 = UnitTestNode1(inst_id=inst_id10)
+            test_inst10.keep_db_in_synch = True
+            test_inst10.one_int = 10
+            test_inst10.one_str = f'abc {rr0}'
+
+
+            inst_id11 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst11 = UnitTestNode1(inst_id=inst_id11)
+            test_inst11.keep_db_in_synch = True
+            test_inst11.one_int = 11
+            test_inst11.one_str = f'abc {rr1}'
+
+
+            inst_id12 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst12 = UnitTestNode1(inst_id=inst_id12)
+            test_inst12.keep_db_in_synch = True
+            test_inst12.one_int = 12
+            test_inst12.one_str = f'abc {rr2}'
+
+            inst_id13 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst13 = UnitTestNode1(inst_id=inst_id13)
+            test_inst13.keep_db_in_synch = True
+            test_inst13.one_int = 13
+            test_inst13.one_str = f'abc {rr3}'
+
+
+            insts = UnitTestNode1.search(props={has(utest.hasOneInt):[12,13,14], has(utest.hasOneStr):[f"abc {rr1}",f"abc {rr2}",f"abc {rr3}"]}, how='all')
+            inst_ids = [inst.inst_id for inst in insts]
+            self.assertIn(test_inst12.inst_id, inst_ids)
+            self.assertIn(test_inst13.inst_id, inst_ids)
+            self.assertEqual(len(insts), 2)
+
+
 if __name__ == '__main__':
     unittest.main(exit=False)
 

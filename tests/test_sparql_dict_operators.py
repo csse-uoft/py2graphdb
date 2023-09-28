@@ -6,7 +6,7 @@ from src.py2graphdb.config import config as CONFIG
 
 if os.path.exists(CONFIG.LOG_FILE): os.remove(CONFIG.LOG_FILE)
 
-from owlready2 import default_world, onto_path, Thing, DataProperty
+from owlready2 import default_world, onto_path, Thing, DataProperty, ObjectProperty
 onto_path.append('input/ontology_cache/')
 
 utest = default_world.get_ontology(CONFIG.NM)
@@ -32,6 +32,16 @@ with utest:
     class hasint(DataProperty):
         rdfs.comment = ["Int for the object"]
         range = [int]
+
+    class hasuri(ObjectProperty):
+        rdfs.comment = ["URI for the object"]
+        range = [Thing]
+
+    class foruri(ObjectProperty):
+        rdfs.comment = ["URI for the object"]
+        range = [Thing]
+        inverse_property = hasuri
+
 
     class hasUUID(DataProperty):
         rdfs.comment = ["UUID for the object, if applicable"]

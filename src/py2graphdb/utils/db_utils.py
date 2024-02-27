@@ -19,7 +19,8 @@ rdf_nm =  default_world.get_namespace("http://www.w3.org/1999/02/22-rdf-syntax-n
 from ..utils.misc_lib import *
 import collections
 import uuid
-
+from rdflib import Literal,URIRef
+from rdflib.util import from_n3
 
 PREFIX = CONFIG.PREFIX
 
@@ -544,7 +545,6 @@ def load_global_db(filename='global_db.pickle'):
         global_db[key] = ObjectDict(lambda: PropertyList(),val)
 
 
-from rdflib import Literal,URIRef
 def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s', stype_label='stype'):
     """
     convert dictionary value to Turtle format
@@ -624,6 +624,7 @@ def row_to_sparql_filters(inst, s_label='s'):
         s = f'?{s_label}'
     text = ''
 
+    ivars = []
     for prop_i, (op,vals) in enumerate(inst.items()):
         if not issubclass(type(op), Operator):
             continue
@@ -644,11 +645,7 @@ def row_to_sparql_filters(inst, s_label='s'):
                 prop_eval = eval(prop2)
             else:                                       
                 prop_eval = prop2
-            # if isinstance(prop, ObjectPropertyClass):   
-            #     prop_eval = prop
-            # elif isinstance(prop2, str):   prop_eval = eval(prop2)
-            # else:                       prop_eval = prop2
-            # if str in ranges:       o = '"'+str(val).replace('\\', '\\\\').replace('"','\\"') + '"'
+
             if prop_eval is None:            o = resolve_nm_for_ttl(val)
             elif str in prop_eval.range:     o = Literal(str(val)).n3()
             elif int in prop_eval.range:     o = Literal(int(val)).n3()
@@ -657,19 +654,21 @@ def row_to_sparql_filters(inst, s_label='s'):
             elif len(prop_eval.range)>0 and prop_eval.range[0] != Thing :     o = Literal(str(val)).n3()+f"^^{prop_eval.range[0]}"
             else:                            o = resolve_nm_for_ttl(val)
             filter_vals.append(o)
+
         # add the propert/value pair to the query or 
-        # if an perator, add ?i_var to query and filter for ?i_var after
-        if isinstance(op, (has, nothas)):
+        # if an operator, add ?i_var to query and filter for ?i_var after
+        if isinstance(op, (has, hasany, hasall, hasonly, nothas)):
             if not isinstance(vals,(PropertyList,list)):
                 filter_vals = [filter_vals]
         elif isinstance(vals,(PropertyList,list)) and len(filter_vals)>0:
             filter_vals = filter_vals[0]
         tmp_var = f'?var_{prop_i}'
+        ivars.append({'op':op,'var':tmp_var, 'select':op.to_select(var=tmp_var), 'cond_vals':vals})
         text += f"{op.to_sparql(val=filter_vals, var=tmp_var, owner=s_label)}.\n"
 
         found_properties = True
 
-    return text if found_properties else None
+    return (text, ivars) if found_properties else (None, None)
 
 def save_db_as_ttl(filename='global_db.ttl', dict_db=None):
     """Save global_db as .ttl file"""
@@ -749,6 +748,7 @@ class SPARQLDict():
             INSERT {{GRAPH <{CONFIG.GRAPH_NAME}> {{{ttl_query}}}}}
             WHERE {{}};
             """
+
         result = CONFIG.client.execute_sparql(query)
         inst = cls._get(klass=klass, inst_id=inst['ID'])
         return inst
@@ -856,9 +856,9 @@ class SPARQLDict():
         return inst
 
     @classmethod
-    def _search(cls, query=None, klass=None, inst_id=None, props={}, how='first', subclass=False):
+    def _search(cls, query=None, klass=None, inst_id=None, props={}, order={}, how='first', subclass=False):
         if klass is not None and query is None:
-            return cls._search_by_params(klass=klass, inst_id=inst_id, props=props, how=how, subclass=subclass)
+            return cls._search_by_params(klass=klass, inst_id=inst_id, props=props, order=order, how=how, subclass=subclass)
         elif klass is None and query is not None:
             return cls._search_by_query(query=query)
         else:
@@ -893,15 +893,14 @@ class SPARQLDict():
     #     return results
 
     @classmethod
-    def _search_by_params(cls, klass, inst_id=None, props={}, how='first', subclass=False):
+    def _search_by_params(cls, klass, inst_id=None, props={}, order={}, how='first', subclass=False):
         results = []
-        limit_str = 'LIMIT 1' if how=='first' else ''
         separator = '###'
         inst_wrapper = props.copy()
         inst_wrapper['ID'] = inst_id
         inst_wrapper['is_a'] = klass
         ttl_query = row_to_turtle(inst_wrapper, subclass=subclass) or ''
-        filter_query = row_to_sparql_filters(inst_wrapper) or ''
+        filter_query, filter_ivars = row_to_sparql_filters(inst_wrapper) or ''
 
         grounded_props = [p for p in inst_wrapper.keys() if issubclass(type(p), PropertyClass)]
         filter_props = [p.prop for p in inst_wrapper.keys() if issubclass(type(p), Operator)]
@@ -926,6 +925,13 @@ class SPARQLDict():
 
         query_select = ' '.join([f"(GROUP_CONCAT(?{pv}_0; separator='{separator}') AS ?{pv})" for pv in prop_vars.keys()])
 
+        if filter_query and filter_ivars:
+            query_select += ' ' + ' '.join([ivar_dict['select'] for ivar_dict in filter_ivars])
+            limit_str = ''
+        else:
+            limit_str = 'LIMIT 1' if how=='first' else ''
+
+        #     query_select += ' ' + ' '.join([f"(concat('{separator}',GROUP_CONCAT({ivar_dict['var']}; separator='{separator}'),'{separator}') AS {ivar_dict['var']}_has)" for ivar_dict in filter_ivars])
         # need to exclude graph for subclasses, if outside of this graph
         graph_query = ''#f"FROM <{CONFIG.GRAPH_NAME}>" if not subclass else ''
 
@@ -936,7 +942,19 @@ class SPARQLDict():
             if (len(where_query.strip())>0) and (not where_query.strip().endswith('.')):
                 where_query +=  '.'
             where_query += '\n'+filter_query
-    
+        if order == {}:
+            order_str = ""
+        else:
+            # relations = [f"resolve_nm_for_dict(p) 
+            rels = []
+            for p,direction in order.items():
+                if direction in ['desc', 'descending']:
+                    rels.append(f"DESC({resolve_nm_for_ttl(p)})")
+                else:
+                    rels.append(resolve_nm_for_ttl(p))
+            order_str = f"ORDER BY {' ' .join(rels)}"
+
+
         query = f"""
             PREFIX {CONFIG.PREFIX}: <{CONFIG.NM}>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -947,17 +965,43 @@ class SPARQLDict():
                 {where_query}
                 filter(?stype != owl:Thing).    # to ensure Thing is not included when infer=True
                 }}
+            # {order_str}
             GROUP BY ?s ?stype
             {limit_str}
             """
-        result = CONFIG.client.execute_sparql(query, method='select', infer=False)
 
+        result = CONFIG.client.execute_sparql(query, method='select', infer=False)
         for res in result['results']['bindings']:
-            properties = SPARQLDict.sparql_to_dict(props=res, prop_vars=prop_vars, separator=separator)
-            klass_tmp = properties.get('is_a') or klass
-            klass_tmp = resolve_nm_for_dict(klass_tmp)
-            inst = get_instance(klass=klass_tmp, inst_id=properties.get('ID'), props=properties)
-            results.append(inst)                
+            passed_filter = True
+            if filter_ivars:
+                for filter_ivar in filter_ivars:
+                    if isinstance(filter_ivar['op'], (hasonly,hasall)) and filter_ivar['op'].to_select_var is not None:
+                        cond_var = re.sub(r'^\?', '', filter_ivar['op'].to_select_var)
+                        range = filter_ivar['op'].prop.range
+                        range_type = range[0] if len(range)>0 else str
+                        
+                        # cond_vals = set([from_n3(o).value for o in filter_ivar['cond_vals']])
+                        cond_vals = set(filter_ivar['cond_vals'])
+                        found_vals = set([range_type(val) for val in res[cond_var]['value'].split(separator)])
+                        if (isinstance(filter_ivar['op'], hasall) and cond_vals.intersection(found_vals) != cond_vals):
+                            passed_filter = False
+                            break
+                        elif  (isinstance(filter_ivar['op'], hasonly)):
+                            tmp_id = res['s']['value'].replace(CONFIG.NM,CONFIG.PREFIX+'.')
+                            sub_res = SPARQLDict._process_path_request(tmp_id, None, action='neighbours', preds=[filter_ivar['op'].prop], direction='children', how='all')
+                            if len(sub_res) != len(cond_vals):
+                                passed_filter = False
+                                break
+                    
+            
+            if passed_filter:
+                properties = SPARQLDict.sparql_to_dict(props=res, prop_vars=prop_vars, separator=separator)
+                klass_tmp = properties.get('is_a') or klass
+                klass_tmp = resolve_nm_for_dict(klass_tmp)
+                inst = get_instance(klass=klass_tmp, inst_id=properties.get('ID'), props=properties)
+                results.append(inst)                
+                if how=='first':
+                    break
 
         return results
 

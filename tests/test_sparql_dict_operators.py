@@ -4,7 +4,8 @@ import os
 
 from src.py2graphdb.config import config as CONFIG
 
-if os.path.exists(CONFIG.LOG_FILE): os.remove(CONFIG.LOG_FILE)
+if os.path.exists(CONFIG.LOG_FILE):
+  os.remove(CONFIG.LOG_FILE)
 
 from owlready2 import default_world, onto_path, Thing, DataProperty, ObjectProperty
 onto_path.append('input/ontology_cache/')
@@ -15,7 +16,7 @@ CONFIG.STORE_LOCAL = False
 
 from owlready2.prop import rdfs
 from src.py2graphdb.ontology.operators import *
-# from src.py2graphdb.utils.db_utils import _resolve_nm, resolve_nm_for_ttl, resolve_nm_for_dict
+from src.py2graphdb.utils.db_utils import _resolve_nm, resolve_nm_for_ttl, resolve_nm_for_dict, _resolve_nm
 
 with utest:
     class TestThing(Thing):
@@ -29,9 +30,17 @@ with utest:
         rdfs.comment = ["Desc for the object"]
         range = [str]
 
+    class hasbool(DataProperty):
+        rdfs.comment = ["Bool for the object"]
+        range = [bool]
+
     class hasint(DataProperty):
         rdfs.comment = ["Int for the object"]
         range = [int]
+
+    class hasstr(DataProperty):
+        rdfs.comment = ["Int for the object"]
+        range = [str]
 
     class hasuri(ObjectProperty):
         rdfs.comment = ["URI for the object"]
@@ -256,7 +265,7 @@ class TestSPARQLDict(unittest.TestCase):
             inst5 = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
             inst6 = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
 
-            insts = SPARQLDict._search(klass=utest.TestThing, props={has(utest.hasint):[2,4], utest.desc:f"this is my trace ({rr})."}, how='all')
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasany(utest.hasint):[2,4], utest.desc:f"this is my trace ({rr})."}, how='all')
             inst_ids = [inst['ID'] for inst in insts]
             self.assertEqual(len(insts), 2)
             self.assertIn(inst2['ID'], inst_ids)
@@ -273,7 +282,7 @@ class TestSPARQLDict(unittest.TestCase):
             inst5 = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
             inst6 = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
 
-            insts = SPARQLDict._search(klass=utest.TestThing, props={has(utest.hasbool):[True], utest.desc:f"this is my trace ({rr})."}, how='all')
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasany(utest.hasbool):[True], utest.desc:f"this is my trace ({rr})."}, how='all')
             inst_ids = [inst['ID'] for inst in insts]
             self.assertEqual(len(insts), 2)
             self.assertIn(inst1['ID'], inst_ids)
@@ -290,7 +299,7 @@ class TestSPARQLDict(unittest.TestCase):
             inst5 = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
             inst6 = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
 
-            insts = SPARQLDict._search(klass=utest.TestThing, props={has(utest.hasbool):[False], utest.desc:f"this is my trace ({rr})."}, how='all')
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasany(utest.hasbool):[False], utest.desc:f"this is my trace ({rr})."}, how='all')
             inst_ids = [inst['ID'] for inst in insts]
             self.assertEqual(len(insts), 2)
             self.assertIn(inst2['ID'], inst_ids)
@@ -307,7 +316,7 @@ class TestSPARQLDict(unittest.TestCase):
             inst5 = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
             inst6 = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
 
-            insts = SPARQLDict._search(klass=utest.TestThing, props={has(utest.hasbool):[False, True], utest.desc:f"this is my trace ({rr})."}, how='all')
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasany(utest.hasbool):[False, True], utest.desc:f"this is my trace ({rr})."}, how='all')
             inst_ids = [inst['ID'] for inst in insts]
             self.assertEqual(len(insts), 4)
             self.assertIn(inst1['ID'], inst_ids)
@@ -450,7 +459,7 @@ class TestSPARQLDict(unittest.TestCase):
             inst5 = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
             inst6 = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
 
-            insts = SPARQLDict._search(klass=utest.TestThing, props={has(utest.hasint):[2,4], utest.desc:f"this is my trace ({rr})."}, how='first')
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasany(utest.hasint):[2,4], utest.desc:f"this is my trace ({rr})."}, how='first')
             self.assertEqual(insts[0]['ID'], inst2['ID'])
             self.assertEqual(len(insts), 1)
 
@@ -469,7 +478,6 @@ class TestSPARQLDict(unittest.TestCase):
             inst_ids = [inst['ID'] for inst in insts]
             self.assertEqual(len(insts), 1)
             self.assertIn(inst2['ID'], inst_ids)
-            # self.assertIn(inst4['ID'], inst_ids)
 
     def test_20(self):
         # exists operator with how='all'
@@ -575,10 +583,249 @@ class TestSPARQLDict(unittest.TestCase):
             inst_ids = [inst['ID'] for inst in insts]
             self.assertEqual(len(insts), 1)
             self.assertIn(inst1['ID'], inst_ids)
-            # self.assertIn(inst2['ID'], inst_ids)
 
-    # TODO: add tests for string filter
-    # TODO: add tests for combination of operators
+
+    def test_30_int(self):
+        # hasall operator with how='all'
+        with utest:
+            rr = np.random.rand()
+            inst1a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            
+            inst2a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,222], utest.hasstr:['b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasall(utest.hasint):[1,11,2], utest.desc:f"this is my trace ({rr})."}, how='all')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 2)
+            self.assertIn(inst2a['ID'], inst_ids)
+            self.assertIn(inst2b['ID'], inst_ids)
+
+    def test_31_int(self):
+        # hasall operator with how='first'
+        with utest:
+            rr = np.random.rand()
+            inst1a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            
+            inst2a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,222], utest.hasstr:['b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst3c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasall(utest.hasint):[1,11,2], utest.desc:f"this is my trace ({rr})."}, how='first')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 1)
+            self.assertIn(inst2a['ID'], inst_ids)
+
+    def test_30_str(self):
+        # hasall operator with how='all'
+        with utest:
+            rr = np.random.rand()
+            inst1a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            
+            inst2a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,222], utest.hasstr:['b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasall(utest.hasstr):['a','aa','b'], utest.desc:f"this is my trace ({rr})."}, how='all')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 2)
+            self.assertIn(inst2a['ID'], inst_ids)
+            self.assertIn(inst2b['ID'], inst_ids)
+
+    def test_31_str(self):
+        # hasall operator with how='first'
+        with utest:
+            rr = np.random.rand()
+            inst1a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            
+            inst2a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,222], utest.hasstr:['b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasall(utest.hasstr):['a','aa','b'], utest.desc:f"this is my trace ({rr})."}, how='first')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 1)
+            self.assertIn(inst2a['ID'], inst_ids)
+
+    def test_32_int(self):
+        # hasonly operator with how='all'
+        with utest:
+            rr = np.random.rand()
+            inst1a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111,1111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            
+            inst2a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,222], utest.hasstr:['b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasonly(utest.hasint):[1,11,111], utest.desc:f"this is my trace ({rr})."}, how='all')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 2)
+            self.assertIn(inst1a['ID'], inst_ids)
+            self.assertIn(inst1b['ID'], inst_ids)
+
+    def test_33_int(self):
+        # hasonly operator with how='first'
+        with utest:
+            rr = np.random.rand()
+            inst1a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            
+            inst2a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,222], utest.hasstr:['b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasonly(utest.hasint):[1,11,111], utest.desc:f"this is my trace ({rr})."}, how='first')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 1)
+            self.assertIn(inst1a['ID'], inst_ids)
+
+    def test_34_str(self):
+        # hasonly operator with how='all'
+        with utest:
+            rr = np.random.rand()
+            inst1a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa','aaaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            
+            inst2a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,222], utest.hasstr:['b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasonly(utest.hasstr):['a','aa','aaa'], utest.desc:f"this is my trace ({rr})."}, how='all')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 2)
+            self.assertIn(inst1a['ID'], inst_ids)
+            self.assertIn(inst1b['ID'], inst_ids)
+
+    def test_35_str(self):
+        # hasonly operator with how='first'
+        with utest:
+            rr = np.random.rand()
+            inst1a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            
+            inst2a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,222], utest.hasstr:['b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasonly(utest.hasstr):['a','aa','aaa'], utest.desc:f"this is my trace ({rr})."}, how='first')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 1)
+            self.assertIn(inst1a['ID'], inst_ids)
+
+
+
+    def test_36(self):
+        # hasonly and hasall operators with how='all'
+        with utest:
+            rr = np.random.rand()
+            inst1a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11], utest.hasstr:['a','aa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1d = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11], utest.hasstr:['a','aa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            
+            inst2a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,222], utest.hasstr:['b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasonly(utest.hasint):[1,11], hasall(utest.hasstr):['a','aa'], utest.desc:f"this is my trace ({rr})."}, how='all')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 2)
+            self.assertIn(inst1c['ID'], inst_ids)
+            self.assertIn(inst1d['ID'], inst_ids)
+
+    def test_37(self):
+        # hasonly operator with how='first'
+        rr = np.random.rand()
+        with utest:
+            inst1a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,111], utest.hasstr:['a','aa', 'aaa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11], utest.hasstr:['a','aa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            inst1d = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11], utest.hasstr:['a','aa'], utest.title:'My TestThing 1', utest.desc:f"this is my trace ({rr})."})
+            
+            inst2a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[1,11,2,22,222], utest.hasstr:['a','aa', 'b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst2c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,222], utest.hasstr:['b','bb','bbb'], utest.title:'My TestThing 2', utest.desc:f"this is my trace ({rr})."})
+            inst3a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[2,22,3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst3c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,333], utest.title:'My TestThing 3', utest.desc:f"this is my trace ({rr})."})
+            inst4a = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+            inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
+
+            insts = SPARQLDict._search(klass=utest.TestThing, props={hasonly(utest.hasint):[1,11], hasall(utest.hasstr):['a','aa'], utest.desc:f"this is my trace ({rr})."}, how='first')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 1)
+            self.assertIn(inst1c['ID'], inst_ids)
+
+    # TODO: add tests has* operators with uri as value
 
 if __name__ == '__main__':
     unittest.main(exit=False)

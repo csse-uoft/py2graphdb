@@ -8,7 +8,8 @@ import numpy as np
 from owlready2 import default_world, onto_path
 onto_path.append('input/ontology_cache/')
 from src.py2graphdb.config import config as CONFIG
-if os.path.exists(CONFIG.LOG_FILE): os.remove(CONFIG.LOG_FILE)
+if os.path.exists(CONFIG.LOG_FILE):
+  os.remove(CONFIG.LOG_FILE)
 CONFIG.STORE_LOCAL = False
 
 utest = default_world.get_ontology(CONFIG.NM)

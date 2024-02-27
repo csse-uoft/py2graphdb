@@ -8,12 +8,19 @@ def generate_random_var(length=10):
 class Operator(ABC):
     prop = None
     prop_str = None
+    to_select_var = None
     def __init__(self, prop) -> None:
         self.prop = prop
 
     def set_normalized(self, prop_str):
         self.prop_str = prop_str
 
+    def to_select(self, var, owner='s'):
+        concat_var = f"{var}_OPERATOR_{type(self).__name__}"
+        self.var = var
+        self.to_select_var = concat_var
+        return ''
+    
     @abstractmethod
     def to_sparql(self, var, val, owner='s'):
         pass
@@ -42,11 +49,42 @@ class gt(Operator):
     def to_sparql(self, var, val, owner='s'):
         return f"FILTER({var} > {val})"
 
-class has(Operator):
+class has_filter(Operator):
     def to_sparql(self, var, val, owner='s'):
         clean_val = '(%s)' % ', '.join(map(str, val))
         return f"FILTER({var} IN {clean_val})"
 
+class hasany(has_filter):
+    """
+    Same filter as has_filter(), but used for disjunction conjunction in query
+    """
+    pass
+class has(hasany):
+    """
+    Same filter as hasany(). Serves as a temporary place holder
+
+    """
+    pass
+class hasall(has_filter):
+    """
+    Same filter as has_filter(), but used for conjunction condition in query
+    """
+    def to_select(self, var, separator='###'):
+        # query_select += ' ' + ' '.join([f"(concat('{separator}',GROUP_CONCAT({ivar_dict['var']}; separator='{separator}'),'{separator}') AS {ivar_dict['var']}_has)" for ivar_dict in filter_ivars])
+        concat_var = f"{var}_OPERATOR_{type(self).__name__}"
+        self.var = var
+        self.to_select_var = concat_var
+        return f"(GROUP_CONCAT({var}; separator='{separator}') AS {concat_var})"
+class hasonly(has_filter):
+    """
+    Same filter as has(), but used for exclusive condition in query
+    """
+    def to_select(self, var, separator='###'):
+        # query_select += ' ' + ' '.join([f"(concat('{separator}',GROUP_CONCAT({ivar_dict['var']}; separator='{separator}'),'{separator}') AS {ivar_dict['var']}_has)" for ivar_dict in filter_ivars])
+        concat_var = f"{var}_OPERATOR_{type(self).__name__}"
+        self.var = var
+        self.to_select_var = concat_var
+        return f"(GROUP_CONCAT({var}; separator='{separator}') AS {concat_var})"
 class nothas(Operator):
     def to_sparql(self, var, val, owner='s'):
         clean_val = '(%s)' % ', '.join(map(str, val))

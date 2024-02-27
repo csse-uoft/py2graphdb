@@ -4,7 +4,8 @@ import os
 
 from src.py2graphdb.config import config as CONFIG
 
-if os.path.exists(CONFIG.LOG_FILE): os.remove(CONFIG.LOG_FILE)
+if os.path.exists(CONFIG.LOG_FILE):
+  os.remove(CONFIG.LOG_FILE)
 
 from owlready2 import default_world, onto_path, Thing, DataProperty, ObjectProperty
 onto_path.append('input/ontology_cache/')

@@ -8,7 +8,8 @@ import numpy as np
 from owlready2 import default_world, onto_path
 onto_path.append('input/ontology_cache/')
 from src.py2graphdb.config import config as CONFIG
-if os.path.exists(CONFIG.LOG_FILE): os.remove(CONFIG.LOG_FILE)
+if os.path.exists(CONFIG.LOG_FILE): 
+  os.remove(CONFIG.LOG_FILE)
 CONFIG.STORE_LOCAL = False
 
 utest = default_world.get_ontology(CONFIG.NM)
@@ -699,7 +700,7 @@ class TestUnitTestNode(unittest.TestCase):
 
     def test_41(self):
         # Test Operators on GraphNodes
-        # has() on [str]
+        # hasany() on [str]
         with utest:
             rr0 = int(np.random.rand()*10**10)
             rr1 = int(np.random.rand()*10**10)
@@ -733,7 +734,7 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst13.one_str = f'abc {rr3}'
 
 
-            insts = UnitTestNode1.search(props={has(utest.hasOneStr):[f"abc {rr1}",f"abc {rr3}"]}, how='all')
+            insts = UnitTestNode1.search(props={hasany(utest.hasOneStr):[f"abc {rr1}",f"abc {rr3}"]}, how='all')
             inst_ids = [inst.inst_id for inst in insts]
             self.assertIn(test_inst11.inst_id, inst_ids)
             self.assertIn(test_inst13.inst_id, inst_ids)
@@ -741,7 +742,7 @@ class TestUnitTestNode(unittest.TestCase):
 
     def test_41_bool1(self):
         # Test Operators on GraphNodes
-        # has() on [bool]
+        # hasany() on [bool]
         with utest:
             rr0 = np.random.rand()*10**10
             rr1 = int(np.random.rand()*10**10)
@@ -791,7 +792,7 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst14.one_str = f'abc {rr4}'
 
         with utest:
-            insts = UnitTestNode1.search(props={utest.hasOneFloat:rr0, has(utest.hasOneBool):[True]}, how='all')
+            insts = UnitTestNode1.search(props={utest.hasOneFloat:rr0, hasany(utest.hasOneBool):[True]}, how='all')
             inst_ids = [inst.inst_id for inst in insts]
             self.assertIn(test_inst10.inst_id, inst_ids)
             self.assertIn(test_inst11.inst_id, inst_ids)
@@ -799,7 +800,7 @@ class TestUnitTestNode(unittest.TestCase):
 
     def test_42(self):
         # Test Operators on GraphNodes
-        # has() on [int] AND has() on [str]
+        # hasany() on [int] AND hasany() on [str]
         with utest:
             rr0 = int(np.random.rand()*10**10)
             rr1 = int(np.random.rand()*10**10)
@@ -833,7 +834,7 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst13.one_str = f'abc {rr3}'
 
 
-            insts = UnitTestNode1.search(props={has(utest.hasOneInt):[12,13,14], has(utest.hasOneStr):[f"abc {rr1}",f"abc {rr2}",f"abc {rr3}"]}, how='all')
+            insts = UnitTestNode1.search(props={hasany(utest.hasOneInt):[12,13,14], hasany(utest.hasOneStr):[f"abc {rr1}",f"abc {rr2}",f"abc {rr3}"]}, how='all')
             inst_ids = [inst.inst_id for inst in insts]
             self.assertIn(test_inst12.inst_id, inst_ids)
             self.assertIn(test_inst13.inst_id, inst_ids)
@@ -841,7 +842,7 @@ class TestUnitTestNode(unittest.TestCase):
 
     def test_42_bool1(self):
         # Test Operators on GraphNodes
-        # has() on [int] AND has() on [str] AND on [bool]
+        # hasany() on [int] AND hasany() on [str] AND on [bool]
         with utest:
             rr0 = int(np.random.rand()*10**10)
             rr1 = int(np.random.rand()*10**10)
@@ -887,7 +888,7 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst14.one_bool = True
 
 
-            insts = UnitTestNode1.search(props={has(utest.hasOneBool):[True],has(utest.hasOneInt):[12,13,14], has(utest.hasOneStr):[f"abc {rr1}",f"abc {rr2}",f"abc {rr3}", f"abc {rr4}"]}, how='all')
+            insts = UnitTestNode1.search(props={hasany(utest.hasOneBool):[True],hasany(utest.hasOneInt):[12,13,14], hasany(utest.hasOneStr):[f"abc {rr1}",f"abc {rr2}",f"abc {rr3}", f"abc {rr4}"]}, how='all')
             inst_ids = [inst.inst_id for inst in insts]
             self.assertIn(test_inst12.inst_id, inst_ids)
             # self.assertIn(test_inst13.inst_id, inst_ids)
@@ -1012,7 +1013,7 @@ class TestUnitTestNode(unittest.TestCase):
 
     def test_50(self):
         # Test Operators on GraphNodes
-        # has() on [int] AND has() on [str]
+        # hasany() on [int] AND hasany() on [str]
         with utest:
             rr0 = int(np.random.rand()*10**10)
             rr1 = int(np.random.rand()*10**10)
@@ -1046,7 +1047,7 @@ class TestUnitTestNode(unittest.TestCase):
             test_inst13.one_str = f'abc {rr3}'
 
 
-            insts = UnitTestNode1.search(props={has(utest.hasOneInt):[12,13,14], has(utest.hasOneStr):[f"abc {rr1}",f"abc {rr2}",f"abc {rr3}"]}, how='all')
+            insts = UnitTestNode1.search(props={hasany(utest.hasOneInt):[12,13,14], hasany(utest.hasOneStr):[f"abc {rr1}",f"abc {rr2}",f"abc {rr3}"]}, how='all')
             inst_ids = [inst.inst_id for inst in insts]
             self.assertIn(test_inst12.inst_id, inst_ids)
             self.assertIn(test_inst13.inst_id, inst_ids)

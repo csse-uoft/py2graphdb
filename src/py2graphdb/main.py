@@ -10,7 +10,8 @@ from owlready2 import default_world, onto_path, DataProperty, ObjectProperty, rd
 from .utils.db_utils import PropertyList, SPARQLDict, resolve_nm_for_dict, Thing, resolve_nm_for_ttl, row_to_turtle
 onto_path.append('input/ontology_cache/')
 from .config import config as CONFIG
-if os.path.exists(CONFIG.LOG_FILE): os.remove(CONFIG.LOG_FILE)
+if os.path.exists(CONFIG.LOG_FILE):
+  os.remove(CONFIG.LOG_FILE)
 CONFIG.STORE_LOCAL = False
 
 utest = default_world.get_ontology(CONFIG.NM)

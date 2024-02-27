@@ -27,7 +27,9 @@ class GraphNode(Thing):
     def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
         created_at = datetime.now()
         super().__init__()
+
         self.keep_db_in_synch = keep_db_in_synch
+
         if inst_id: self.inst_id = resolve_nm_for_dict(str(inst_id))
         self.load(inst=inst)
         if not self.inst_id: self.inst_id = get_instance_label(klass = self.klass)

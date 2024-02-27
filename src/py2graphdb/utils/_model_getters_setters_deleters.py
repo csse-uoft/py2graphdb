@@ -6,12 +6,10 @@ def search(cls, props={}, how='first', subclass=False):
     return [cls(inst=inst).cast_to_graph_type() for inst in insts]
 
 def save(self):
-    preds_to_update = {}
     for val,props in self.relations.items():
         pred = re.sub('^\.', f'{CONFIG.PREFIX}.', str(props['pred']))
         value = getattr(self, f'_{val}')
-        preds_to_update[pred] = value
-    inst = SPARQLDict._update(klass=self.klass,inst_id=self.inst_id, new=preds_to_update)
+        inst = SPARQLDict._update(klass=self.klass,inst_id=self.inst_id, new={pred:value})
     self.graph_is_a = inst.get('is_a')
 
 
@@ -24,8 +22,9 @@ def load(self, inst=None):
 
     if inst is None and self.inst_id is not None:
         inst = self.SPARQLDict._get(inst_id=self.inst_id)
-        if inst is None and self.keep_db_in_synch:
+        if inst is None  and self.keep_db_in_synch:
             inst = self.SPARQLDict._add(klass=self.klass,inst_id=self.inst_id)
+
     elif inst is None and self.inst_id is None and self.keep_db_in_synch:
         inst = self.SPARQLDict._add(klass=self.klass)
 
@@ -41,7 +40,9 @@ def load(self, inst=None):
         for val,props in self.relations.items():
             pred = props['pred']
             cardinality = props['cardinality']
-            kind = pred.range[0]
+            if props.get('range'):
+                pred.range = props.get('range')
+            kind = pred.range[0] if len(pred.range)>0 else str
             values = inst[pred] if pred in inst.keys() else []
 
             if kind==bool:    
@@ -76,7 +77,9 @@ for val,props in relations.items():
     pred = props['pred']
     pred_str = re.sub('^\.', f'{CONFIG.PREFIX}.', str(props['pred']))
     cardinality = props['cardinality']
-    kind = pred.range[0]
+    if props.get('range'):
+        pred.range = props.get('range')
+    kind = pred.range[0] if len(pred.range)>0 else str
     kind_str = Thing if isinstance(kind,str) else kind.__name__
     value = 'value'
 
@@ -84,6 +87,7 @@ for val,props in relations.items():
     elif kind!=Thing:    value = f"{kind_str}(re.sub(f'^{CONFIG.PREFIX}:','',str(value)))"
     else:               value = 'resolve_nm_for_dict(value)'
     set_code = ".append(value)" if cardinality=='many' else " = value"
+
     code = f"""
 @property
 def {val}(self):
@@ -116,5 +120,3 @@ def {val}(self,value):
     del kind_str
     del value
     del set_code
-
-

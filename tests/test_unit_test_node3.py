@@ -18,6 +18,8 @@ with utest:
     from tests.unit_test_ks import UnitTestNode3
     print()
 
+from src.py2graphdb.ontology.operators import *
+
 
 class TestUnitTestNode(unittest.TestCase):
     @classmethod
@@ -637,6 +639,86 @@ class TestUnitTestNode(unittest.TestCase):
 
             self.assertEqual(test_inst2.one_int_level3, 336789)
             self.assertEqual(test_inst2.list_of_ints_level3, [3388991010, 33111112121313])
+
+    def test_100(self):
+
+        with utest:
+            test_inst1a = UnitTestNode3(keep_db_in_synch=True)
+            test_inst1b = UnitTestNode3(keep_db_in_synch=True)
+            test_inst1c = UnitTestNode3(keep_db_in_synch=True)
+            test_inst1d = UnitTestNode3(keep_db_in_synch=True)
+
+
+            test_inst2a = UnitTestNode3(keep_db_in_synch=True)
+            test_inst2b = UnitTestNode3(keep_db_in_synch=True)
+            test_inst2c = UnitTestNode3(keep_db_in_synch=True)
+
+            test_inst3a = UnitTestNode3(keep_db_in_synch=True)
+            test_inst3b = UnitTestNode3(keep_db_in_synch=True)
+            test_inst3c = UnitTestNode3(keep_db_in_synch=True)
+
+            test_inst4a = UnitTestNode3(keep_db_in_synch=True)
+            test_inst4b = UnitTestNode3(keep_db_in_synch=True)
+            test_inst5c = UnitTestNode3(keep_db_in_synch=True)
+
+
+            test_inst1a.list_of_uris = test_inst1b.inst_id
+            test_inst1a.list_of_uris = test_inst1c.inst_id
+
+            test_inst2a.list_of_uris = test_inst1b.inst_id
+            test_inst2a.list_of_uris = test_inst1c.inst_id
+
+            test_inst3a.list_of_uris = test_inst1b.inst_id
+            test_inst3a.list_of_uris = test_inst1c.inst_id
+            test_inst3a.list_of_uris = test_inst1d.inst_id
+
+            insts = SPARQLDict._search(klass=UnitTestNode3, props={hasonly(utest.hasListOfURIs):[test_inst1b.inst_id, test_inst1c.inst_id]}, how='all')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 2)
+            self.assertIn(test_inst1a.inst_id, inst_ids)
+            self.assertIn(test_inst2a.inst_id, inst_ids)
+
+    def test_101(self):
+
+        with utest:
+            test_inst1a = UnitTestNode3(keep_db_in_synch=True)
+            test_inst1b = UnitTestNode3(keep_db_in_synch=True)
+            test_inst1c = UnitTestNode3(keep_db_in_synch=True)
+            test_inst1d = UnitTestNode3(keep_db_in_synch=True)
+
+
+            test_inst2a = UnitTestNode3(keep_db_in_synch=True)
+            test_inst2b = UnitTestNode3(keep_db_in_synch=True)
+            test_inst2c = UnitTestNode3(keep_db_in_synch=True)
+
+            test_inst3a = UnitTestNode3(keep_db_in_synch=True)
+            test_inst3b = UnitTestNode3(keep_db_in_synch=True)
+            test_inst3c = UnitTestNode3(keep_db_in_synch=True)
+
+            test_inst4a = UnitTestNode3(keep_db_in_synch=True)
+            test_inst4b = UnitTestNode3(keep_db_in_synch=True)
+            test_inst4c = UnitTestNode3(keep_db_in_synch=True)
+
+
+            test_inst1a.list_of_uris = test_inst1b.inst_id
+            test_inst1a.list_of_uris = test_inst1c.inst_id
+
+            test_inst2a.list_of_uris = test_inst1b.inst_id
+            test_inst2a.list_of_uris = test_inst1c.inst_id
+            test_inst2a.list_of_uris = test_inst4c.inst_id
+
+            test_inst3a.list_of_uris = test_inst1b.inst_id
+            test_inst3a.list_of_uris = test_inst1d.inst_id
+
+            test_inst4a.list_of_uris = test_inst1b.inst_id
+            test_inst4a.list_of_uris = test_inst1d.inst_id
+
+            insts = SPARQLDict._search(klass=UnitTestNode3, props={hasall(utest.hasListOfURIs):[test_inst1b.inst_id, test_inst1c.inst_id]}, how='all')
+            inst_ids = [inst['ID'] for inst in insts]
+            self.assertEqual(len(insts), 2)
+            self.assertIn(test_inst1a.inst_id, inst_ids)
+            self.assertIn(test_inst2a.inst_id, inst_ids)
+
 
 if __name__ == '__main__':
     unittest.main(exit=False)

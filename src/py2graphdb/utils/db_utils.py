@@ -978,18 +978,27 @@ class SPARQLDict():
                     if isinstance(filter_ivar['op'], (hasonly,hasall)) and filter_ivar['op'].to_select_var is not None:
                         cond_var = re.sub(r'^\?', '', filter_ivar['op'].to_select_var)
                         range = filter_ivar['op'].prop.range
-                        range_type = range[0] if len(range)>0 else str
-                        
-                        # cond_vals = set([from_n3(o).value for o in filter_ivar['cond_vals']])
+                        kind = range[0] if len(range)>0 else str
                         cond_vals = set(filter_ivar['cond_vals'])
-                        found_vals = set([range_type(val) for val in res[cond_var]['value'].split(separator)])
+                        found_vals = []
+                        for val in res[cond_var]['value'].split(separator):
+                            if kind==bool:    
+                                val = 'true' == re.sub(f'^{CONFIG.PREFIX}:','',str(val)).lower()
+                            elif kind != Thing:
+                                val = kind(val) #eval(f"{kind.__name__}(re.sub(f'^{CONFIG.PREFIX}:','',str(val)))")
+                            else:
+                                val = val.replace(CONFIG.NM,CONFIG.PREFIX+'.')
+                            found_vals.append(val)
+                        found_vals = set(found_vals)
                         if (isinstance(filter_ivar['op'], hasall) and cond_vals.intersection(found_vals) != cond_vals):
                             passed_filter = False
                             break
                         elif  (isinstance(filter_ivar['op'], hasonly)):
                             tmp_id = res['s']['value'].replace(CONFIG.NM,CONFIG.PREFIX+'.')
+                            matched_vals = cond_vals.intersection(found_vals)
                             sub_res = SPARQLDict._process_path_request(tmp_id, None, action='neighbours', preds=[filter_ivar['op'].prop], direction='children', how='all')
-                            if len(sub_res) != len(cond_vals):
+                            sub_res = set([v['end'] for v in sub_res])
+                            if len(cond_vals) != len(matched_vals) or len(sub_res) != len(matched_vals):
                                 passed_filter = False
                                 break
                     

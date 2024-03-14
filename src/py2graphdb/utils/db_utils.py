@@ -904,7 +904,6 @@ class SPARQLDict():
 
         grounded_props = [p for p in inst_wrapper.keys() if issubclass(type(p), PropertyClass)]
         filter_props = [p.prop for p in inst_wrapper.keys() if issubclass(type(p), Operator)]
-
         klass_object = eval(f"{resolve_nm_for_dict(klass)}")
         try:
             klass_object.relations
@@ -954,11 +953,16 @@ class SPARQLDict():
                     rels.append(resolve_nm_for_ttl(p))
             order_str = f"ORDER BY {' ' .join(rels)}"
 
+        prefixes = {}
+        for p in prop_vars.values():
+            prefixes[p.namespace.name] = p.namespace.base_iri
+        prefixes_str = "\n".join([f"PREFIX {pv}: <{p}>" for pv,p in prefixes.items()])
 
         query = f"""
             PREFIX {CONFIG.PREFIX}: <{CONFIG.NM}>
             PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
             PREFIX owl: <http://www.w3.org/2002/07/owl#>
+            {prefixes_str}
             SELECT DISTINCT ?s ?stype {query_select}
             {graph_query}
             WHERE {{ 
@@ -969,7 +973,7 @@ class SPARQLDict():
             GROUP BY ?s ?stype
             {limit_str}
             """
-
+        print(query)
         result = CONFIG.client.execute_sparql(query, method='select', infer=False)
         for res in result['results']['bindings']:
             passed_filter = True
@@ -1020,22 +1024,22 @@ class SPARQLDict():
     # ask if any parents with pred
     # find children with pred
     @classmethod
-    def _path_distance(cls, start, end=None, preds=[], direction='children', how='first'):
-        return cls._process_path_request(start=start, action='distance', end=end, preds=preds, direction=direction, how=how)
+    def _path_distance(cls, start, end=None, preds=[], direction='children', how='first', infer=False):
+        return cls._process_path_request(start=start, action='distance', end=end, preds=preds, direction=direction, how=how, infer=infer)
 
     @classmethod
-    def _path_exists(cls, start, end=None, preds=[], direction='children', how='first'):
-        return cls._process_path_request(start=start, action='ask', end=end, preds=preds, direction=direction, how=how)
+    def _path_exists(cls, start, end=None, preds=[], direction='children', how='first', infer=False):
+        return cls._process_path_request(start=start, action='ask', end=end, preds=preds, direction=direction, how=how, infer=infer)
 
     @classmethod
-    def _children(cls, start, end=None, preds=[], action='collect', how='first'):
-        return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction='children', how=how)
+    def _children(cls, start, end=None, preds=[], action='collect', how='first', infer=False):
+        return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction='children', how=how, infer=infer)
     @classmethod
-    def _parents(cls, start, end=None, preds=[], action='collect', how='first'):
-        return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction='parents', how=how)
+    def _parents(cls, start, end=None, preds=[], action='collect', how='first', infer=False):
+        return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction='parents', how=how, infer=infer)
     @classmethod
-    def _path_collect(cls, start, end=None, preds=[], action='collect', direction='children', how='first'):
-        return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction=direction, how=how)
+    def _path_collect(cls, start, end=None, preds=[], action='collect', direction='children', how='first', infer=False):
+        return cls._process_path_request(start=start, action=action, end=end, preds=preds, direction=direction, how=how, infer=infer)
 
 
     @classmethod
@@ -1069,7 +1073,7 @@ class SPARQLDict():
     #        list (strings)  = many inst_ids
     #        list (Data/ObjectProperty)  = many predicates
     #        dict   = inst object
-    def _process_path_request(cls, start, end, action='collect', preds=[], direction='children', how='first'):        
+    def _process_path_request(cls, start, end, action='collect', preds=[], direction='children', how='first', infer=False):
         start_query = SPARQLDict._build_node_query(param=start, val='start')
         if start_query == '':
             raise(ValueError("start condition can't be empty."))
@@ -1157,7 +1161,7 @@ class SPARQLDict():
         }}    ORDER BY ?path ?index {limit_query}
         """
 
-        result = CONFIG.client.execute_sparql(query, method='select', infer=False)
+        result = CONFIG.client.execute_sparql(query, method='select', infer=infer)
         if action =='ask'       : return result.get('boolean')
         if action == 'distance' : return cls._parse_distance_list(result['results']['bindings'])
         if action in 'collect'  : 
@@ -1244,7 +1248,7 @@ class SPARQLDict():
             val = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.', val)
             inst_id = s
             if p ==  f"{rdf_nm.base_iri}type":
-                klass = eval(val)
+                klass = default_world.get_namespace(val).name
                 if klass is not None: properties['is_a'] = klass
             else:
                 prop_eval = p.replace(':','.')
@@ -1280,8 +1284,7 @@ class SPARQLDict():
 
         if props.get('stype'):
             klass = props['stype']['value']
-            klass = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.', klass)
-            properties['is_a'] = eval(klass)
+            properties['is_a'] = default_world.get_namespace(klass).name
         for prop_var,prop in prop_vars.items():
             klass = None
             if prop_var not in props.keys():

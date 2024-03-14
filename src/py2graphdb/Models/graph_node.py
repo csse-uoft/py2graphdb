@@ -1,8 +1,9 @@
-from ..utils.db_utils import SPARQLDict, PropertyList,get_instance_label, resolve_nm_for_ttl, resolve_nm_for_dict, Thing, ThingClass
-
+from ..utils.db_utils import SPARQLDict, PropertyList,get_instance_label, resolve_nm_for_ttl, resolve_nm_for_dict, Thing, ThingClass, _resolve_nm, default_world
 import re, hashlib, os
 from ..config import config as CONFIG
 from datetime import datetime
+exec(f"{CONFIG.PREFIX} = default_world.get_namespace(\"{CONFIG.NM}\")")
+
 class GraphNode(Thing):
     """
     A db Model class that defines the schema for the Text data level.
@@ -93,6 +94,11 @@ class GraphNode(Thing):
 
     def cast_to_graph_type(self):
         if self.graph_is_a:
+            if isinstance(self.graph_is_a, str):
+
+                tmp = _resolve_nm(default_world.get_namespace(self.graph_is_a).name, from_delimiter='#',to_delimiter='.')
+                self.graph_is_a = eval(tmp)
+
             return self.graph_is_a(self)
         else:
             return self

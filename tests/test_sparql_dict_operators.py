@@ -843,7 +843,6 @@ class TestSPARQLDict(unittest.TestCase):
             # inst4b = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[3,3,33,4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
             # inst4c = SPARQLDict._add(klass=utest.TestThing, props={utest.hasint:[4,44,444], utest.title:'My TestThing 4', utest.desc:f"this is my trace ({rr})."})
 
-            print('>>',[utest.a, utest.aa])
             insts = SPARQLDict._search(klass=utest.TestThing, props={hasonly(utest.hasuri):['utest.a', 'utest.aa'], hasall(utest.hasstr):['a','aa'], utest.desc:f"this is my trace ({rr})."}, how='first')
             inst_ids = [inst['ID'] for inst in insts]
             self.assertEqual(len(insts), 1)

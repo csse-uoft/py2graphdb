@@ -95,7 +95,6 @@ class GraphNode(Thing):
     def cast_to_graph_type(self):
         if self.graph_is_a:
             if isinstance(self.graph_is_a, str):
-
                 tmp = _resolve_nm(default_world.get_namespace(self.graph_is_a).name, from_delimiter='#',to_delimiter='.')
                 self.graph_is_a = eval(tmp)
 

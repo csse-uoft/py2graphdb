@@ -716,8 +716,8 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertEqual(test_inst2_load.graph_is_a,  utest.UnitTestNode2)
 
             test_inst2_load.cast_to_graph_type()
-            self.assertEqual(test_inst2_load.graph_is_a,  utest.UnitTestNode2)
             self.assertEqual(test_inst2_load.__class__,  utest.UnitTestNode2)
+            self.assertEqual(test_inst2_load.graph_is_a,  utest.UnitTestNode2)
 
 if __name__ == '__main__':
     unittest.main(exit=False)

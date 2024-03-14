@@ -1,5 +1,5 @@
 from ..config import config as CONFIG
-import os
+import os, tqdm
 if os.path.exists(CONFIG.LOG_FILE):  os.remove(CONFIG.LOG_FILE)
 
 import csv, re, datetime, collections, pickle, unicodedata, io, os
@@ -973,7 +973,7 @@ class SPARQLDict():
             GROUP BY ?s ?stype
             {limit_str}
             """
-        print(query)
+
         result = CONFIG.client.execute_sparql(query, method='select', infer=False)
         for res in result['results']['bindings']:
             passed_filter = True
@@ -1248,7 +1248,9 @@ class SPARQLDict():
             val = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.', val)
             inst_id = s
             if p ==  f"{rdf_nm.base_iri}type":
-                klass = default_world.get_namespace(val).name
+                # klass = eval(default_world.get_namespace(val).name)
+                klass = eval(_resolve_nm(default_world.get_namespace(val).name, from_delimiter='#',to_delimiter='.'))
+                # klass = eval(val)
                 if klass is not None: properties['is_a'] = klass
             else:
                 prop_eval = p.replace(':','.')
@@ -1284,7 +1286,8 @@ class SPARQLDict():
 
         if props.get('stype'):
             klass = props['stype']['value']
-            properties['is_a'] = default_world.get_namespace(klass).name
+            # properties['is_a'] = eval(default_world.get_namespace(klass).name)
+            properties['is_a'] = eval(_resolve_nm(default_world.get_namespace(klass).name, from_delimiter='#',to_delimiter='.'))
         for prop_var,prop in prop_vars.items():
             klass = None
             if prop_var not in props.keys():

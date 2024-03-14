@@ -28,7 +28,6 @@ def load(self, inst=None):
     elif inst is None and self.inst_id is None and self.keep_db_in_synch:
         inst = self.SPARQLDict._add(klass=self.klass)
 
-
     if inst is not None:
         if self.inst_id is not None and self.inst_id != inst['ID']:
             raise(ValueError, f"Unmatched inst_ids: {self.inst_id} != {inst['ID']}")
@@ -70,7 +69,11 @@ def load(self, inst=None):
             except AttributeError:
                 pass
 
-    if inst is not None: self.graph_is_a = inst.get('is_a')
+    if inst is not None: 
+        self.graph_is_a = inst.get('is_a')
+        if isinstance(self.graph_is_a, str):
+            tmp = _resolve_nm(default_world.get_namespace(self.graph_is_a).name, from_delimiter='#',to_delimiter='.')
+            self.graph_is_a = eval(tmp)
 
 
 for val,props in relations.items():

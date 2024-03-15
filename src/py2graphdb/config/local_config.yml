@@ -1,0 +1,21 @@
+#################################################################################
+# Start of configuration file
+#################################################################################
+# Store a local copy of the graph?
+STORE_LOCAL : False
+
+# For larger files need to create an index for quick lookup of local dict db.
+DB_INDEX_FIELDS : []
+
+# log file path
+LOG_FILE : './logs/test.log'
+
+##############################################################################################
+# GraphDB Configuration
+##############################################################################################
+# Server where graph is stored
+SERVER_URL : "http://localhost:7200"
+# Repository where graph is stored
+REPOSITORY : 'smile2'
+# named graph where triples are stored, None if default graph
+GRAPH_NAME : "http://unit-test2"

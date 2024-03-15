@@ -6,7 +6,6 @@ def init_db():
 
     with nm:
         from py2graphdb.utils.db_utils import SPARQLDict
-        from .Model.controller.ks import Ks
 
     from graphdb_importer import import_and_wait, set_config
     TMP_DIR = './tmp/'
@@ -16,7 +15,6 @@ def init_db():
     set_config(CONFIG.SERVER_URL, CONFIG.REPOSITORY, username='admin', password='admin')
     import_and_wait(owl_file, replace_graph=True)
     SPARQLDict._clear_graph(graph=CONFIG.GRAPH_NAME)
-    Ks.initialize_ks_db()
 
 
 def load_owl(owl_file, graph_name=None):

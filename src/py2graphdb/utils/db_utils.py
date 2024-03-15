@@ -8,7 +8,7 @@ from copy import copy
 import warnings
 
 from owlready2 import default_world, onto_path, DataProperty, rdfs, Thing, ThingClass
-from owlready2.prop import PropertyClass, ObjectPropertyClass
+from owlready2.prop import DataPropertyClass, PropertyClass, ObjectPropertyClass
 from ..ontology.operators import *
 
 onto_path.append('input/ontology_cache/')
@@ -583,7 +583,7 @@ def row_to_turtle(inst, prop_only=False, subclass=False, s_label='s', stype_labe
             prop2 = str(prop).replace(':','.')
             prop2 = re.sub('^\.', f'{CONFIG.PREFIX}.', prop2)
 
-            if isinstance(prop, ObjectPropertyClass):   
+            if isinstance(prop, (DataPropertyClass,ObjectPropertyClass)):   
                 prop_eval = prop
                 prop_str = f"<{prop.namespace.base_iri}{prop.name}>"
             elif isinstance(prop2, str):
@@ -802,7 +802,7 @@ class SPARQLDict():
         return inst
 
     @classmethod
-    def _update(cls, klass=None, inst_id=None, drop=None, add=None, new=None):
+    def _update(cls, klass=None, inst_id=None, drop=None, add=None, new=None, iri=None):
         if inst_id is None:
             return cls._add(klass=klass, props=add or new)
         else:
@@ -817,7 +817,13 @@ class SPARQLDict():
         if new is not None:
             query = ''
             for prop in new.keys():
-                ttl_props = resolve_nm_for_ttl(prop)
+                if isinstance(prop, str) and iri.get(prop):
+                    ttl_props = f"<{iri[prop].iri}>"
+                elif isinstance(prop, (DataPropertyClass, ObjectPropertyClass)):
+                    ttl_props = f"<{prop.iri}>"
+                else: # isinstance(prop, str):
+                    ttl_props = resolve_nm_for_ttl(prop)
+
                 if ttl_props:
                     query += f"""
                                     PREFIX {CONFIG.PREFIX}: <{CONFIG.NM}>
@@ -1248,9 +1254,7 @@ class SPARQLDict():
             val = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.', val)
             inst_id = s
             if p ==  f"{rdf_nm.base_iri}type":
-                # klass = eval(default_world.get_namespace(val).name)
                 klass = eval(_resolve_nm(default_world.get_namespace(val).name, from_delimiter='#',to_delimiter='.'))
-                # klass = eval(val)
                 if klass is not None: properties['is_a'] = klass
             else:
                 prop_eval = p.replace(':','.')
@@ -1286,7 +1290,6 @@ class SPARQLDict():
 
         if props.get('stype'):
             klass = props['stype']['value']
-            # properties['is_a'] = eval(default_world.get_namespace(klass).name)
             properties['is_a'] = eval(_resolve_nm(default_world.get_namespace(klass).name, from_delimiter='#',to_delimiter='.'))
         for prop_var,prop in prop_vars.items():
             klass = None

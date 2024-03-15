@@ -6,10 +6,11 @@ def search(cls, props={}, how='first', subclass=False):
     return [cls(inst=inst).cast_to_graph_type() for inst in insts]
 
 def save(self):
+    # needs to be optimized not to call _update for each property, but all at once.
     for val,props in self.relations.items():
         pred = re.sub('^\.', f'{CONFIG.PREFIX}.', str(props['pred']))
         value = getattr(self, f'_{val}')
-        inst = SPARQLDict._update(klass=self.klass,inst_id=self.inst_id, new={pred:value})
+        inst = SPARQLDict._update(klass=self.klass,inst_id=self.inst_id, new={pred:value}, iri={pred:props['pred']})
     self.graph_is_a = inst.get('is_a')
 
 
@@ -79,6 +80,8 @@ def load(self, inst=None):
 for val,props in relations.items():
     pred = props['pred']
     pred_str = re.sub('^\.', f'{CONFIG.PREFIX}.', str(props['pred']))
+    pred_iri = props['pred'].iri
+    props_str = str(props['pred'])
     cardinality = props['cardinality']
     if props.get('range'):
         pred.range = props.get('range')
@@ -104,11 +107,11 @@ def {val}(self,value):
     if isinstance(self._{val}, (PropertyList,list)):
         self._{val}.append(value)
         if self.keep_db_in_synch:
-            inst = SPARQLDict._update(klass=klass,inst_id=self.inst_id, add={{{pred_str}:value}})
+            inst = SPARQLDict._update(klass=klass,inst_id=self.inst_id, add={{{pred_str}:value}}, iri="{{{pred_str}:{props_str}}}")
     else:
         self._{val} = value
         if self.keep_db_in_synch:
-            inst = SPARQLDict._update(klass=klass,inst_id=self.inst_id, new={{{pred_str}:value}})
+            inst = SPARQLDict._update(klass=klass,inst_id=self.inst_id, new={{{pred_str}:value}}, iri="{{{pred_str}:{props_str}}}")
     if self.inst_id is None and inst:
         self.inst_id = inst['ID']    
 """

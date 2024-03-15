@@ -11,9 +11,9 @@ except:
     print("loaded???")#sqlite3.OperationalError
 print('Loading/Downloading ontologies, if the script stuck here, try re-run it.')
 # compass = default_world.get_ontology('https://github.com/csse-uoft/compass-ontology/releases/download/latest/compass.owl').load(reload=True)
-compass = default_world.get_ontology('https://github.com/csse-uoft/compass-ontology/releases/download/latest/compass.owl').load(reload=True)
+# compass = default_world.get_ontology('https://github.com/csse-uoft/compass-ontology/releases/download/latest/compass.owl').load(reload=True)
 print('Ontology Loaded.')
-cp = default_world.get_namespace('http://helpseeker.co/compass#')  # Same as compass
+# cp = default_world.get_namespace('http://helpseeker.co/compass#')  # Same as compass
 ic = default_world.get_namespace('http://ontology.eil.utoronto.ca/tove/icontact#')
 geo = default_world.get_namespace('http://www.w3.org/2003/01/geo/wgs84_pos/')
 cids = default_world.get_namespace('http://ontology.eil.utoronto.ca/cids/cids#')

@@ -5,6 +5,16 @@ def search(cls, props={}, how='first', subclass=False):
     insts = SPARQLDict._search(klass=cls.klass, props=props, how=how, subclass=subclass)
     return [cls(inst=inst).cast_to_graph_type() for inst in insts]
 
+@classmethod
+def get(cls, inst_id):
+    inst = None
+    how='first'
+    subclass=False
+    insts = SPARQLDict._search(klass=cls.klass, inst_id=inst_id, how=how, subclass=subclass)
+    if len(insts)>0:
+        inst = cls(inst=insts[0]).cast_to_graph_type()
+    return inst
+
 def save(self):
     # needs to be optimized not to call _update for each property, but all at once.
     for val,props in self.relations.items():

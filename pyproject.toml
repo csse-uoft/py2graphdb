@@ -24,7 +24,6 @@ repository = "https://github.com/csse-uoft/py2graphdb"
 where = ["src"]
 include = ["py2graphdb", "py2graphdb.*"]
 exclude = ["tests"]
-namespaces = false
 
 [tool.setuptools.package-data]
 "*" = ["*.*"]

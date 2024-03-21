@@ -20,7 +20,6 @@ def powerset(iterable):
     s = list(iterable)
     res =  [list(r2) for r2 in [list(itert.chain.from_iterable(itert.combinations(s, r) for r in range(len(s)+1)))]][0]
     res2 = []
-#    print('Len = ' + str(len(res)))
     for r in res:
         res2 += [list(r)]
     return res2
@@ -39,7 +38,8 @@ def random_sign():
 
 def unique_all(l):
     _,idx = np.unique([str(x) for x in l], return_index=True)
-    return [tuple(x) for x in np.array(l)[idx]]
+    return [tuple(ll) for i,ll in enumerate(l) if i in idx]
+    # return [tuple(x) for x in np.array(l)[idx]]
 
 def dedup(l):
     seen = set()

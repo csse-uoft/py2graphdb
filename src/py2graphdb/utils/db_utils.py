@@ -721,7 +721,7 @@ class SPARQLDict():
         result = CONFIG.client.execute_sparql(query)
 
     @classmethod        
-    def _delete(cls, inst_id):
+    def _delete(cls, inst_id, refs=False):
         inst_id = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.', inst_id)
         inst_id = resolve_nm_for_ttl(inst_id)
         query = f"""
@@ -729,13 +729,16 @@ class SPARQLDict():
             DELETE {{GRAPH <{CONFIG.GRAPH_NAME}> {{ 
                 {inst_id} ?p ?o.
             }}}}
-            WHERE {{{inst_id} ?p ?o}};
-            PREFIX {CONFIG.PREFIX}: <{CONFIG.NM}>
-            DELETE {{GRAPH <{CONFIG.GRAPH_NAME}> {{ 
-                ?s ?p {inst_id}.
-            }}}}
-            WHERE {{?s ?p {inst_id}}};
-            """
+            WHERE {{{inst_id} ?p ?o}}
+        """
+        if refs:
+            query += """;
+                PREFIX {CONFIG.PREFIX}: <{CONFIG.NM}>
+                DELETE {{GRAPH <{CONFIG.GRAPH_NAME}> {{ 
+                    ?s ?p {inst_id}.
+                }}}}
+                WHERE {{?s ?p {inst_id}}};
+                """
         result = CONFIG.client.execute_sparql(query)
 
     @classmethod

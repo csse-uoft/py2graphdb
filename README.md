@@ -27,8 +27,8 @@ class MyNode(NodeGraph):
   }
 
 # creates a new node object and keeps its properties synched up with the database.
-my_node = MyNode('parent_node', keep_db_synch=True) 
-print(my_node.id) # >> 'utest.parent_node' # if no ID is provided, a UUID is generated.
+my_node = MyNode(inst_id='parent_node', keep_db_synch=True) 
+print(my_node.id) # >> 'utest.parent_node' # if no inst_id is provided, a UUID is generated.
 
 # set name property
 my_node.name = "My First Node"
@@ -37,8 +37,8 @@ my_node.name = "My First Node"
 #    utest:parent_node  utest:hasName          "My First Node"^^xsd:string.
 
 # add child nodes
-my_node.my_nodes = MyNode(id='child1', keep_db_synch=True)
-my_node.my_nodes = MyNode(id='child2', keep_db_synch=True)
+my_node.my_nodes = MyNode(inst_id='child1', keep_db_synch=True)
+my_node.my_nodes = MyNode(inst_id='child2', keep_db_synch=True)
 # >> triples stored in the database:
 #    utest:child1       rdf:type               utest:MyNode.
 #    utest:parent_node  utest:hasListOfNodes   utest:child1.

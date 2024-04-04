@@ -34,15 +34,15 @@ print(my_node.id) # >> 'utest.parent_node' # if no ID is provided, a UUID is gen
 my_node.name = "My First Node"
 # >> triples stored in the database:
 #    utest:parent_node  rdf:type               utest:MyNode.
-#    utest:parent_node  utest:hasName          "My First Node"^^xsd:string
+#    utest:parent_node  utest:hasName          "My First Node"^^xsd:string.
 
 # add child nodes
 my_node.my_nodes = MyNode(id='child1', keep_db_synch=True)
 my_node.my_nodes = MyNode(id='child2', keep_db_synch=True)
 # >> triples stored in the database:
-#    utest:child1       rdf:type               utest:child1.
+#    utest:child1       rdf:type               utest:MyNode.
 #    utest:parent_node  utest:hasListOfNodes   utest:child1.
-#    utest:child2       rdf:type               utest:child2.
+#    utest:child2       rdf:type               utest:MyNode.
 #    utest:parent_node  utest:hasListOfNodes   utest:child2.
 ```
 

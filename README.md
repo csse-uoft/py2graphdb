@@ -14,6 +14,8 @@ utest = default_world.get_ontology('utest')
 with utest:
   class hasName(DataProperty):
       range = [str]
+  class hasNumbers(DataProperty):
+      range = [int]
   class hasListOfNodes(ObjectProperty):
       range = [Thing]
 
@@ -22,21 +24,31 @@ class MyNode(NodeGraph):
   ...
   klass = 'utest.MyNode'
   relations = {
-      'name' : {'pred':utest.hasName, 'cardinality':'one'},
-      'my_nodes' : {'pred':utest.hasListOfNodes, 'cardinality':'many'},
+      'name'       : {'pred':utest.hasName, 'cardinality':'one'},
+      'my_numbers' : {'pred':utest.hasNumbers, 'cardinality':'many'},
+      'my_nodes'   : {'pred':utest.hasListOfNodes, 'cardinality':'many'}
   }
 
 # creates a new node object and keeps its properties synched up with the database.
 my_node = MyNode(inst_id='parent_node', keep_db_synch=True) 
-print(my_node.id) # >> 'utest.parent_node' # if no inst_id is provided, a UUID is generated.
-
-# set name property
-my_node.name = "My First Node"
+# if no inst_id is provided, a UUID is generated.
 # >> triples stored in the database:
 #    utest:parent_node  rdf:type               utest:MyNode.
+
+# set name property (cardinality:one)
+my_node.name = "My First Node"
+# >> triples stored in the database:
 #    utest:parent_node  utest:hasName          "My First Node"^^xsd:string.
 
-# add child nodes
+# add list of numbers (cardinality:many)
+my_node.my_numbers = 123
+my_node.my_numbers = 456
+# >> triples stored in the database:
+#    utest:parent_node  utest:hasNumbers         123^^xsd:integer.
+#    utest:parent_node  utest:hasNumbers         456^^xsd:integer.
+
+
+# connect object nodes
 my_node.my_nodes = MyNode(inst_id='child1', keep_db_synch=True)
 my_node.my_nodes = MyNode(inst_id='child2', keep_db_synch=True)
 # >> triples stored in the database:

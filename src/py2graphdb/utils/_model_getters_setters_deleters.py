@@ -16,17 +16,22 @@ def get(cls, inst_id):
     return inst
 
 def save(self):
-    # needs to be optimized not to call _update for each property, but all at once.
-    # first attempt
-    # SPARQLDict._delete(inst_id=self.inst_id, refs=False)
-    # inst = SPARQLDict._add(klass=self.klass,inst_id=self.inst_id, props=self.relations)
-    
-    for val,props in self.relations.items():
+    # combine updates
+    updates = {}
+    iri_updates = {}
+
+    for val, props in self.relations.items():
         pred = re.sub('^\.', f'{CONFIG.PREFIX}.', str(props['pred']))
         value = getattr(self, f'_{val}')
-        # inst = SPARQLDict._update(klass=self.klass,inst_id=self.inst_id, add={pred:value}, iri={pred:props['pred']})
-        inst = SPARQLDict._update(klass=self.klass,inst_id=self.inst_id, new={pred:value}, iri={pred:props['pred']})
-    self.graph_is_a = inst.get('is_a')
+
+        # combine updates and IRIs
+        updates[pred] = value
+        iri_updates[pred] = props['pred']
+
+    # perform a single update operation
+    if updates:
+        inst = SPARQLDict._update(klass=self.klass, inst_id=self.inst_id, new=updates, iri=iri_updates)
+        self.graph_is_a = inst.get('is_a') if inst else None
 
 
 def delete(self):

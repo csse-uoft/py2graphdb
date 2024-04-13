@@ -10,7 +10,7 @@ def get(cls, inst_id):
     inst = None
     how='first'
     subclass=False
-    insts = SPARQLDict._search(klass=cls.klass, inst_id=inst_id, how=how, subclass=subclass)
+    insts = SPARQLDict._search_by_params(inst_id=inst_id, how=how, subclass=subclass)
     if len(insts)>0:
         inst = cls(inst=insts[0]).cast_to_graph_type()
     return inst

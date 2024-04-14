@@ -586,6 +586,45 @@ class TestSPARQLDict(unittest.TestCase):
     #         self.assertEqual(len(insts), 1)
     #         self.assertIn(inst1['ID'], inst_ids)
 
+    def test_45(self):
+        # test delete, default refs (True)
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasfloat:rr})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._get(inst_id=inst_id1)
+            inst_id2 = inst['ID']
+            self.assertEqual(inst_id1, inst_id2)
+
+            SPARQLDict._delete(inst_id=inst_id1)
+
+    def test_46(self):
+        # test delete refs=False
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasfloat:rr})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._get(inst_id=inst_id1)
+            inst_id2 = inst['ID']
+            self.assertEqual(inst_id1, inst_id2)
+
+            SPARQLDict._delete(inst_id=inst_id1, refs=False)
+
+    def test_47(self):
+        # test delete refs=False
+        with utest:
+            rr = np.random.rand()
+            inst = SPARQLDict._add(klass=utest.TestThing, props={utest.title:'My TestThing', utest.desc:f"this is my trace ({rr}).", utest.hasfloat:rr})
+            inst_id1 = inst['ID']
+
+            inst = SPARQLDict._get(inst_id=inst_id1)
+            inst_id2 = inst['ID']
+            self.assertEqual(inst_id1, inst_id2)
+
+            SPARQLDict._delete(inst_id=inst_id1, refs=False)
+
     def test_50(self):
         with utest:
             rr = np.random.rand()

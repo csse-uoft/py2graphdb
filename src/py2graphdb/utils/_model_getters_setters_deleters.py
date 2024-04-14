@@ -35,8 +35,8 @@ def save(self):
 
 
 
-def delete(self):
-    SPARQLDict._delete(inst_id=self.inst_id)
+def delete(self, refs=True):
+    SPARQLDict._delete(inst_id=self.inst_id, refs=refs)
 
 def load(self, inst=None):
     if inst is not None and inst.get('ID'):

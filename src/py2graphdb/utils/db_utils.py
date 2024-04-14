@@ -871,7 +871,7 @@ class SPARQLDict():
         elif klass is None and query is not None:
             return cls._search_by_query(query=query)
         else:
-            raise(ValueError(f"only of of klass and query can be None: klass=\"{klass}\"; query=\"{query}\""))
+            raise(ValueError(f"only one of klass and query can be None: klass=\"{klass}\"; query=\"{query}\""))
         
     # @classmethod
     # def _search_by_query(cls, query):

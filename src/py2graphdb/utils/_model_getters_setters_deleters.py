@@ -15,15 +15,14 @@ def get(cls, inst_id):
         inst = cls(inst=insts[0]).cast_to_graph_type()
     return inst
 
+
 def save(self):
-    # combine updates
     updates = {}
     iri_updates = {}
 
-    for val, props in self.relations.items():
+    for val, props in self.relations.items():    
         pred = re.sub('^\.', f'{CONFIG.PREFIX}.', str(props['pred']))
         value = getattr(self, f'_{val}')
-
         # combine updates and IRIs
         updates[pred] = value
         iri_updates[pred] = props['pred']
@@ -32,6 +31,8 @@ def save(self):
     if updates:
         inst = SPARQLDict._update(klass=self.klass, inst_id=self.inst_id, new=updates, iri=iri_updates)
         self.graph_is_a = inst.get('is_a') if inst else None
+
+
 
 
 def delete(self):

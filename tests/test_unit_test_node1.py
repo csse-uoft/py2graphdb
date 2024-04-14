@@ -607,6 +607,40 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertIn(f'my name {rr3}', test_inst10_copy.list_of_strs)
             self.assertIn(f'my name {rr4}', test_inst10_copy.list_of_strs)
 
+    def test_342(self):
+        with utest:
+            rr1 = int(np.random.rand()*10**10)
+            rr2 = int(np.random.rand()*10**10)
+            rr3 = int(np.random.rand()*10**10)
+            rr4 = int(np.random.rand()*10**10)
+            test_inst10 = UnitTestNode1()
+            test_inst10.keep_db_in_synch = False
+            test_inst10.one_int = rr1
+            test_inst10.list_of_ints = rr2 
+            test_inst10.list_of_ints = rr3 
+            test_inst10.one_str = f'my name {rr1}'
+            test_inst10.list_of_strs = f'my name {rr2}'
+            test_inst10.save()
+
+            test_inst10.one_int = rr2
+            test_inst10.one_str = f'my name {rr2}'
+            test_inst10.list_of_ints = rr4 
+            test_inst10.list_of_strs = f'my name {rr3}'
+            test_inst10.list_of_strs = f'my name {rr4}'
+            test_inst10.save()
+
+            test_inst10_copy = UnitTestNode1(inst_id=test_inst10.inst_id)
+            self.assertEqual(rr2, test_inst10_copy.one_int)
+            self.assertEqual(len(test_inst10_copy.list_of_ints), 3)
+            self.assertIn(rr2, test_inst10_copy.list_of_ints)
+            self.assertIn(rr3, test_inst10_copy.list_of_ints)
+            self.assertIn(rr4, test_inst10_copy.list_of_ints)
+            self.assertEqual(f'my name {rr2}', test_inst10_copy.one_str)
+            self.assertEqual(len(test_inst10_copy.list_of_strs), 3)
+            self.assertIn(f'my name {rr2}', test_inst10_copy.list_of_strs)
+            self.assertIn(f'my name {rr3}', test_inst10_copy.list_of_strs)
+            self.assertIn(f'my name {rr4}', test_inst10_copy.list_of_strs)
+
     def test_35(self):
         # test drop() in different scenarios
         with utest:

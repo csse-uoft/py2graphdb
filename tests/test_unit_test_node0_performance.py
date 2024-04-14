@@ -5,7 +5,7 @@ from pprint import pprint
 import re
 import numpy as np
 import tqdm
-from owlready2 import default_world, onto_path, ObjectProperty, DataProperty, rdfs, Thing 
+from owlready2 import default_world, onto_path, ObjectProperty, DataProperty, rdfs, Thing
 
 onto_path.append('input/ontology_cache/')
 from src.py2graphdb.config import config as CONFIG
@@ -17,7 +17,7 @@ utest = default_world.get_ontology(CONFIG.NM)
 from src.py2graphdb.ontology.operators import *
 with utest:
     from src.py2graphdb.Models.graph_node import GraphNode
-    from src.py2graphdb.utils.db_utils import SPARQLDict
+    from src.py2graphdb.utils.db_utils import SPARQLDict, PropertyList
     print()
 
 with utest:
@@ -180,16 +180,20 @@ class TestUnitTestNode0(unittest.TestCase):
                     id_str = inst_1.id_str
                 )
     def test_save(self):
-        np.random.seed(42)
         with utest:
-            inst = UnitTestNode0.generate(
-            id_str=str(int(np.random.rand() * 10**10)),
-            many_strs=[str(int(np.random.rand() * 10**9)) for _ in range(10)],
-            int_a=int(5),
-            int_b=int(7)
-            )
+            for i in tqdm.tqdm(range(self.ITERS_N), desc='save'):
+                inst_1 = UnitTestNode0.generate(
+                    id_str = str(int(np.random.rand()*10**10)),
+                    many_strs = [str(int(np.random.rand()*10**10)) for i in range(10)],
+                    int_a = int(np.random.rand()*10),
+                    int_b = int(np.random.rand()*10)
+                )
 
-            inst.save()
+                inst_1.keep_db_synch = False
+                inst_1.many_strs = [str(int(np.random.rand()*10**10)) for i in range(10)],
+                inst_1.int_a = int(np.random.rand()*10)
+                inst_1.int_b = int(np.random.rand()*10)
+                inst_1.save()
 
 if __name__ == '__main__':
     unittest.main(exit=False)

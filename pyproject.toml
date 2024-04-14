@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py2graphdb"
-version = "0.0.1"
+version = "0.0.2"
 description = "Python wrapper for GraphDB and SPARQL interface"
 authors = [
     { name = "Bart Gajderowicz", email = "bgajdero@gmail.com" },

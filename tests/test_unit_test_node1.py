@@ -511,6 +511,32 @@ class TestUnitTestNode(unittest.TestCase):
             self.assertIn(insts[0]['ID'], [n.inst_id for n in nodes])
             self.assertIn(test_inst12.inst_id, [n.inst_id for n in nodes])
 
+    def test_311(self):
+        with utest:
+            rr1 = int(np.random.rand()*10**10)
+            rr2 = int(np.random.rand()*10**10)
+            rr3 = int(np.random.rand()*10**10)
+            inst_id10 = f"utest.{int(np.random.rand()*10**10)}"
+            test_inst10 = UnitTestNode1(inst_id=inst_id10)
+            test_inst10.keep_db_in_synch = False
+            test_inst10.one_int = rr1
+            test_inst10.list_of_ints = rr2 
+            test_inst10.list_of_ints = rr3 
+            test_inst10.one_str = f'my name {rr1}'
+            test_inst10.list_of_strs = f'my name {rr2}'
+            test_inst10.list_of_strs = f'my name {rr3}'
+            test_inst10.save()
+
+            inst = SPARQLDict._search_by_params(inst_id=inst_id10,how='first')[0]
+            node_get = GraphNode.get(inst_id=inst_id10)
+            self.assertEqual(inst['ID'], inst_id10)
+            self.assertEqual(node_get.inst_id, inst_id10)
+
+            self.assertEqual(node_get.one_int, rr1)
+
+
+
+
     def test_32(self):
         with utest:
             rr1 = int(np.random.rand()*10**10)

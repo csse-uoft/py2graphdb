@@ -902,7 +902,7 @@ class SPARQLDict():
     #     return results
 
     @classmethod
-    def _search_by_params(cls, klass, inst_id=None, props={}, order={}, how='first', subclass=False):
+    def _search_by_params(cls, klass=None, inst_id=None, props={}, order={}, how='first', subclass=False):
         results = []
         separator = '###'
         inst_wrapper = props.copy()

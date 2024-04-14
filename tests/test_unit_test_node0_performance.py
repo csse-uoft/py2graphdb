@@ -179,6 +179,17 @@ class TestUnitTestNode0(unittest.TestCase):
                 inst_2 = UnitTestNode0.find_generate(
                     id_str = inst_1.id_str
                 )
+    def test_save(self):
+        np.random.seed(42)
+        with utest:
+            inst = UnitTestNode0.generate(
+            id_str=str(int(np.random.rand() * 10**10)),
+            many_strs=[str(int(np.random.rand() * 10**9)) for _ in range(10)],
+            int_a=int(5),
+            int_b=int(7)
+            )
+
+            inst.save()
 
 if __name__ == '__main__':
     unittest.main(exit=False)

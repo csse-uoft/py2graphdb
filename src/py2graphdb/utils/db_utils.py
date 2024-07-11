@@ -772,8 +772,9 @@ class SPARQLDict():
                 """
             result = CONFIG.client.execute_sparql(query)
             uris = list(set([r['s']['value'] for r in result["results"]["bindings"] if 's' in r.keys() and r['s']['type']=='uri']))
+
             if len(uris) > 1:
-                raise(Exception("too mny uris returned"))
+                raise(Exception(f"too many uris returned:\n{query}\n" + "\n\t".join(uris)))
             elif len(uris) == 1:
                 inst_id = uris[0]
                 inst_id = re.sub(f'^{CONFIG.NM}', f'{CONFIG.PREFIX}.', inst_id)
@@ -1260,7 +1261,10 @@ class SPARQLDict():
                 klass = eval(_resolve_nm(default_world.get_namespace(val).name, from_delimiter='#',to_delimiter='.'))
                 if klass is not None: properties['is_a'] = klass
             else:
-                prop_eval = p.replace(':','.')
+                if p.startswith('http'):
+                    p = _resolve_nm(default_world.get_namespace(p).name, from_delimiter='#',to_delimiter='.')
+                else:
+                    prop_eval = p.replace(':','.')
                 prop_eval = re.sub('^\.', f'{CONFIG.PREFIX}.', prop_eval)
                 prop_eval = eval(prop_eval)
                 # if prop_eval in prop_ranges.keys() and len(prop_ranges[prop_eval])>0:

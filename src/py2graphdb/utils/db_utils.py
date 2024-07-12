@@ -1262,7 +1262,7 @@ class SPARQLDict():
                 if klass is not None: properties['is_a'] = klass
             else:
                 if p.startswith('http'):
-                    p = _resolve_nm(default_world.get_namespace(p).name, from_delimiter='#',to_delimiter='.')
+                    prop_eval = _resolve_nm(default_world.get_namespace(p).name, from_delimiter='#',to_delimiter='.')
                 else:
                     prop_eval = p.replace(':','.')
                 prop_eval = re.sub('^\.', f'{CONFIG.PREFIX}.', prop_eval)

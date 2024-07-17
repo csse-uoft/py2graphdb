@@ -14,6 +14,27 @@ from ..ontology.operators import *
 onto_path.append('input/ontology_cache/')
 exec(f"{CONFIG.PREFIX} = default_world.get_namespace(\"{CONFIG.NM}\")")
 
+import importlib.util
+
+imported = set()
+for path in onto_path:
+    # Construct the path to namespaces.py based on the current path in onto_path
+    adjusted_path = os.path.dirname(os.path.normpath(path))
+    namespaces_file_path = os.path.join(adjusted_path, 'namespaces.py')
+
+    if os.path.exists(namespaces_file_path):
+        # namespaces.py file exists
+        module_name = 'namespaces'
+        if namespaces_file_path not in imported:
+            imported.add(namespaces_file_path)
+            spec = importlib.util.spec_from_file_location(module_name, namespaces_file_path)
+            namespaces_module = importlib.util.module_from_spec(spec)
+            namespaces_module.__package__ = __package__
+            spec.loader.exec_module(namespaces_module)
+            module_vars = vars(namespaces_module)
+            globals_to_import = {k: v for k, v in module_vars.items() if k not in globals()}
+            globals().update(globals_to_import)
+
 rdf_nm =  default_world.get_namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
 
 from ..utils.misc_lib import *
@@ -478,8 +499,12 @@ def _resolve_nm(val, from_delimiter=':', to_delimiter='.'):
     return res : string value for property value
     """
     if isinstance(val, ThingClass) or issubclass(type(val), PropertyClass):
+        # if to_delimiter == ':':
+        #     val = f'<{val.iri}>'
+        # else:
+        #     val = val.iri
+        # return val
         val = str(val)
-
     res = ''
     if isinstance(val, str):
         match = re.findall(f'(.+)\\{to_delimiter}([^\\{to_delimiter}]+)', val)
@@ -772,7 +797,7 @@ class SPARQLDict():
                 """
             result = CONFIG.client.execute_sparql(query)
             uris = list(set([r['s']['value'] for r in result["results"]["bindings"] if 's' in r.keys() and r['s']['type']=='uri']))
-
+            
             if len(uris) > 1:
                 raise(Exception(f"too many uris returned:\n{query}\n" + "\n\t".join(uris)))
             elif len(uris) == 1:
@@ -859,7 +884,7 @@ class SPARQLDict():
                     }}}}
                     WHERE {{}};
                     """
-                result = CONFIG.client.execute_sparql(query, method='update')
+                result = CONFIG.client.execute_sparql(query, method='updates')
 
         inst = cls._get(klass=klass, inst_id=inst_id)
 
@@ -1261,10 +1286,11 @@ class SPARQLDict():
                 klass = eval(_resolve_nm(default_world.get_namespace(val).name, from_delimiter='#',to_delimiter='.'))
                 if klass is not None: properties['is_a'] = klass
             else:
+                prop_eval = None
                 if p.startswith('http'):
                     prop_eval = _resolve_nm(default_world.get_namespace(p).name, from_delimiter='#',to_delimiter='.')
                 else:
-                    prop_eval = p.replace(':','.')
+                    prop_eval = p.replace(':','.')                
                 prop_eval = re.sub('^\.', f'{CONFIG.PREFIX}.', prop_eval)
                 prop_eval = eval(prop_eval)
                 # if prop_eval in prop_ranges.keys() and len(prop_ranges[prop_eval])>0:

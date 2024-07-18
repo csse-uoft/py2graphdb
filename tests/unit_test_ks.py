@@ -70,7 +70,6 @@ with utest:
         rdfs.comment = ["Desc for subclass object at level 2"]
         range = [int]
 
-
     class hasOneInt3(DataProperty):
         rdfs.comment = ["Desc for subclass object at level 3"]
         range = [int]
@@ -78,6 +77,22 @@ with utest:
     class hasListOfInts3(DataProperty):
         rdfs.comment = ["Desc for subclass object at level 3"]
         range = [int]
+
+    class forOrganization(ObjectProperty):
+        rdfs.comment = ["Connects a logic model to its organization"]
+        range = [Thing]
+
+    class hasProgram(ObjectProperty):
+        rdfs.comment = ["Connects a logic model to its program"]
+        range = [Thing]
+
+    class hasService(ObjectProperty):
+        rdfs.comment = ["Connects a program to its service"]
+        range = [Thing]
+
+    class hasSubActivity(ObjectProperty):
+        rdfs.comment = ["Connects a service to its sub-activity"]
+        range = [Thing]
 
 
 import re
@@ -183,5 +198,56 @@ class UnitTestNode3(UnitTestNode2):
     imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
     exec(imported_code)
 
+class OrganizationNode(GraphNode):
+    klass = 'utest.OrganizationNode'
+    relations = {}
+
+    def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
+        super().__init__(inst_id=inst_id, inst=inst, keep_db_in_synch=keep_db_in_synch)
+    imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
+    exec(imported_code)
+
+class LogicModelNode(GraphNode):
+    klass = 'utest.LogicModelNode'
+    relations = {
+        'program': {'pred': utest.hasProgram, 'cardinality': 'many'},
+        'organization': {'pred': utest.forOrganization, 'cardinality': 'many'},
+
+    }
+
+    def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
+        super().__init__(inst_id=inst_id, inst=inst, keep_db_in_synch=keep_db_in_synch)
+    imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
+    exec(imported_code)
+
+class ProgramNode(GraphNode):
+    klass = 'utest.ProgramNode'
+    relations = {
+        'service': {'pred': utest.hasService, 'cardinality': 'many'},
+    }
+
+    def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
+        super().__init__(inst_id=inst_id, inst=inst, keep_db_in_synch=keep_db_in_synch)
+    imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
+    exec(imported_code)
+
+class ServiceNode(GraphNode):
+    klass = 'utest.ServiceNode'
+    relations = {
+        'activity': {'pred': utest.hasSubActivity, 'cardinality': 'many'},
+    }
+
+    def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
+        super().__init__(inst_id=inst_id, inst=inst, keep_db_in_synch=keep_db_in_synch)
+    imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
+    exec(imported_code)
+
+class ActivityNode(GraphNode):
+    klass = 'utest.ActivityNode'
+    relations = {}
+    def __init__(self, inst_id=None, inst=None, keep_db_in_synch=False) -> None:
+        super().__init__(inst_id=inst_id, inst=inst, keep_db_in_synch=keep_db_in_synch)
+    imported_code = open('src/py2graphdb/utils/_model_getters_setters_deleters.py').read()
+    exec(imported_code)
 
 

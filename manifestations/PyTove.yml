@@ -1,0 +1,31 @@
+name: PyTove
+channels:
+  - conda-forge
+  - anaconda
+  - defaults
+dependencies:
+  - python=3.9
+  # to fix this problem with cartopy: https://github.com/SciTools/cartopy/issues/1940
+  - pygeos
+  # to fix install problem: https://github.com/sdorkenw/MeshParty/issues/63
+  - pyyaml
+  - regex
+  - requests
+  # - sacremoses=master=py_0
+  # - setuptools
+  # - six=1.16.0=pyh6c4a22f_0
+  - tqdm
+  - urllib3
+  - yaml
+  - xlsxwriter
+  - unidecode
+  - pandas=1.4.2
+  - pip
+  - pip:
+    - SPARQLWrapper==2.0.0
+    - python-dateutil
+    - Werkzeug
+    - git+https://github.com/csse-uoft/owlready2.git
+    - git+https://github.com/csse-uoft/graphdb-importer
+    - git+https://github.com/csse-uoft/py2graphdb
+    - classproperty

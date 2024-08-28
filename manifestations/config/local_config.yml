@@ -1,0 +1,23 @@
+#################################################################################
+# Start of configuration file
+#################################################################################
+
+# Directory where Logs are placed
+LOG_DIR : "./logs/"
+LOG_FILE : "./logs/smile_trace_log.txt"
+
+##############################################################################################
+# Server and repository
+##############################################################################################
+# Server where graph is stored
+SERVER_URL : "http://localhost:7200"
+# Repository where graph is stored
+REPOSITORY : 'smile'
+# named graph where triples are stored, None if default graph
+GRAPH_NAME : "http://smile"
+
+# Default Namespace
+NM : "http://smile/#"
+PREFIX : 'smile'
+
+DB_INDEX_FIELDS: []

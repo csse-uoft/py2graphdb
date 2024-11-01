@@ -47,7 +47,7 @@ class UnitTestNode0(GraphNode):
     klass = 'utest.UnitTestNode0'
     relations = {
         'id_str' : {'pred':utest.hasOneIDStr, 'cardinality':'one'},
-        'many_strs' : {'pred':utest.hasManyStrs, 'cardinality':'one'},
+        'many_strs' : {'pred':utest.hasManyStrs, 'cardinality':'many'},
         'int_a' : {'pred':utest.hasOneIntA, 'cardinality':'one'},
         'int_b' : {'pred':utest.hasOneIntB, 'cardinality':'one'},
     }

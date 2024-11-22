@@ -932,7 +932,7 @@ class SPARQLDict():
             if p not in grounded_props + filter_props:
                 query_rels += f"OPTIONAL{{?s {resolve_nm_for_ttl(p)} ?{pv}_0 }}\n" 
 
-        query_select = ' '.join([f"(GROUP_CONCAT(?{pv}_0; separator='{separator}') AS ?{pv})" for pv in prop_vars.keys()])
+        query_select = ' '.join([f"(GROUP_CONCAT(?{pv}_0; separator='{separator}') AS ?{pv})" for pv in set(prop_vars.keys()) - set(optional_prop_vars.keys())])
 
         if filter_query and filter_ivars:
             query_select += ' ' + ' '.join([ivar_dict['select'] for ivar_dict in filter_ivars])
